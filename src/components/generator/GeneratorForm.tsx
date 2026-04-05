@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Zap, AlertCircle, Sparkles, Settings, Save } from 'lucide-react';
 import type { DetailedFields, GenerationMode, GenerateApiResponse } from '@/types';
 import { Button } from '@/components/ui/Button';
@@ -79,9 +79,19 @@ export function GeneratorForm() {
    const [isLoading, setIsLoading] = useState(false); 
    const [result, setResult] = useState<GenerateApiResponse | null>(null); 
    const [globalError, setGlobalError] = useState<string | null>(null); 
+   const resultRef = useRef<HTMLDivElement>(null);
  
    // ── Validation ───────────────────────────────────────────────────────────── 
-   const [validationError, setValidationError] = useState<string | null>(null); 
+   const [validationError, setValidationError] = useState<string | null>(null);
+   
+   // Scroll to result when it appears
+   useEffect(() => {
+     if (result && resultRef.current) {
+       setTimeout(() => {
+         resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+       }, 100);
+     }
+   }, [result]); 
  
   function validate(): boolean {
     if (
@@ -292,6 +302,11 @@ export function GeneratorForm() {
 
         const data: GenerateApiResponse = await res.json();
         setResult(data);
+        
+        // Refresh user data to update credits in real-time
+        if (mode === 'api' && user) {
+          await refreshUserData();
+        }
       }
     } catch (err) {
       setGlobalError(err instanceof Error ? err.message : 'Что-то пошло не так');
@@ -818,7 +833,7 @@ export function GeneratorForm() {
   
           {/* API result (image) */} 
           {(mode === 'api') && (isLoading || showApiResult) && ( 
-            <div> 
+            <div ref={resultRef}> 
               <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3"> 
                 Сгенерированное изображение 
               </p> 

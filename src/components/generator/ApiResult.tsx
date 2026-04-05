@@ -64,8 +64,8 @@ export function ApiResult({ imageUrl, error, isLoading, onRegenerate }: ApiResul
       <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] overflow-hidden animate-slide-up">
         {/* Image */}
         <div 
-          className="aspect-video relative cursor-pointer group"
-          onClick={() => setShowModal(true)}
+          className="aspect-video relative group cursor-pointer"
+          onClick={() => !imgError && setShowModal(true)}
         >
           {imgError ? (
             <div className="w-full h-full flex items-center justify-center bg-[var(--bg-card)] text-[var(--text-muted)] text-sm gap-2">
@@ -82,7 +82,7 @@ export function ApiResult({ imageUrl, error, isLoading, onRegenerate }: ApiResul
                 onError={() => setImgError(true)}
                 unoptimized
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center pointer-events-none">
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                   <Maximize2 className="w-8 h-8 text-white" />
                 </div>
