@@ -113,6 +113,30 @@ export default function PricingPage() {
   const { user, userData } = useAuth();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
+  const handleSubscriptionClick = (planId: string) => {
+    if (!user) {
+      window.location.href = '/';
+      return;
+    }
+    
+    // Redirect to Telegram bot for payment
+    const botUsername = 'ThumbGenAI_BOT';
+    const startParam = `subscribe_${planId}`;
+    window.open(`https://t.me/${botUsername}?start=${startParam}`, '_blank');
+  };
+
+  const handleCreditPurchase = (credits: number) => {
+    if (!user) {
+      window.location.href = '/';
+      return;
+    }
+    
+    // Redirect to Telegram bot for payment
+    const botUsername = 'ThumbGenAI_BOT';
+    const startParam = `credits_${credits}`;
+    window.open(`https://t.me/${botUsername}?start=${startParam}`, '_blank');
+  };
+
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
@@ -199,6 +223,7 @@ export default function PricingPage() {
                       className="w-full"
                       variant={isCurrentPlan ? 'outline' : 'primary'}
                       disabled={isCurrentPlan}
+                      onClick={() => !isCurrentPlan && plan.id !== 'free' && handleSubscriptionClick(plan.id)}
                     >
                       {isCurrentPlan ? 'Активен' : plan.id === 'free' ? 'Текущий план' : 'Выбрать план'}
                     </Button>
@@ -277,7 +302,10 @@ export default function PricingPage() {
 
                   {/* CTA Button */}
                   {user ? (
-                    <Button className="w-full">
+                    <Button 
+                      className="w-full"
+                      onClick={() => handleCreditPurchase(pkg.credits)}
+                    >
                       Купить
                     </Button>
                   ) : (
