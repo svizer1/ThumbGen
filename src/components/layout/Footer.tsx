@@ -85,84 +85,63 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Resources */}
           <div className="animate-fadeIn stagger-2">
             <h4 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-              Компания
+              Ресурсы
             </h4>
             <ul className="space-y-3">
               <li>
-                <Link
-                  href="/about"
+                <a
+                  href="https://github.com/svizer1/ThumbGen"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
                 >
-                  О нас
-                </Link>
+                  GitHub
+                </a>
               </li>
               <li>
-                <Link
-                  href="/blog"
+                <a
+                  href="https://docs.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
                 >
-                  Блог
-                </Link>
+                  Документация
+                </a>
               </li>
               <li>
-                <Link
-                  href="/contact"
+                <a
+                  href="mailto:support@thumbgen.ai"
                   className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
                 >
-                  Контакты
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/careers"
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
-                >
-                  Карьера
-                </Link>
+                  Поддержка
+                </a>
               </li>
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* AI Models */}
           <div className="animate-fadeIn stagger-3">
             <h4 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-              Правовая информация
+              AI Модели
             </h4>
             <ul className="space-y-3">
               <li>
-                <Link
-                  href="/privacy"
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
-                >
-                  Политика конфиденциальности
-                </Link>
+                <span className="text-sm text-[var(--text-secondary)]">
+                  Google Imagen 4
+                </span>
               </li>
               <li>
-                <Link
-                  href="/terms"
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
-                >
-                  Условия использования
-                </Link>
+                <span className="text-sm text-[var(--text-secondary)]">
+                  FLUX.1 Dev
+                </span>
               </li>
               <li>
-                <Link
-                  href="/cookies"
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
-                >
-                  Политика Cookie
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/refund"
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
-                >
-                  Возврат средств
-                </Link>
+                <span className="text-sm text-[var(--text-secondary)]">
+                  Stable Diffusion XL
+                </span>
               </li>
             </ul>
           </div>

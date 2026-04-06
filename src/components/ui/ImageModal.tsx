@@ -2,7 +2,7 @@
 
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
-import Image from 'next/image';
+import { createPortal } from 'react-dom';
 
 interface ImageModalProps {
   imageUrl: string;
@@ -24,7 +24,7 @@ export function ImageModal({ imageUrl, onClose }: ImageModalProps) {
     };
   }, [onClose]);
 
-  return (
+  const modalContent = (
     <div 
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4"
       onClick={onClose}
@@ -53,4 +53,11 @@ export function ImageModal({ imageUrl, onClose }: ImageModalProps) {
       </div>
     </div>
   );
+
+  // Render to body using portal
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+
+  return null;
 }
