@@ -106,11 +106,14 @@ export async function handleStart(update: TelegramUpdate) {
     const bot = getTelegramBotClient();
     const user = message.from;
     
-    console.log('Creating/getting telegram user');
-    await getOrCreateTelegramUser(user);
+    // Don't wait for Firestore - do it async
+    console.log('Triggering async user creation');
+    getOrCreateTelegramUser(user).catch(err => {
+      console.error('Background user creation failed:', err);
+    });
 
-    console.log('Getting user language');
-    const lang = await getUserLanguage(user.id);
+    console.log('Getting user language (default)');
+    const lang = 'ru'; // Default to Russian for now
     
     console.log('Getting message text');
     const text = getMessage(lang, 'welcome');
