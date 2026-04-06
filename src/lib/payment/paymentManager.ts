@@ -1,6 +1,6 @@
-import { doc, getDoc, setDoc, updateDoc, increment, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin';
 import { SubscriptionPlan } from '@/types/payment';
+import * as admin from 'firebase-admin';
 
 /**
  * Add credits to user account
@@ -12,21 +12,21 @@ export async function addCreditsToUser(
 ): Promise<boolean> {
   try {
     // Get Firebase UID from Telegram ID
-    const telegramUserDoc = await getDoc(doc(db, 'telegram_users', telegramId.toString()));
-    if (!telegramUserDoc.exists()) {
+    const telegramUserDoc = await adminDb.collection('telegram_users').doc(telegramId.toString()).get();
+    if (!telegramUserDoc.exists) {
       console.error('Telegram user not found:', telegramId);
       return false;
     }
 
-    const firebaseUid = telegramUserDoc.data().firebaseUid;
+    const firebaseUid = telegramUserDoc.data()?.firebaseUid;
     if (!firebaseUid) {
       console.error('Firebase UID not linked for Telegram user:', telegramId);
       // Create a temporary Firebase user for this Telegram user
       const tempUid = `telegram_${telegramId}`;
-      await setDoc(doc(db, 'users', tempUid), {
+      await adminDb.collection('users').doc(tempUid).set({
         uid: tempUid,
         email: null,
-        displayName: telegramUserDoc.data().firstName,
+        displayName: telegramUserDoc.data()?.firstName,
         photoURL: null,
         emailVerified: false,
         credits: credits,
@@ -40,15 +40,15 @@ export async function addCreditsToUser(
         totalGenerations: 0,
         favoriteModel: null,
         modelUsage: {},
-        createdAt: new Date(),
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
         telegramId: telegramId,
-        telegramUsername: telegramUserDoc.data().username,
+        telegramUsername: telegramUserDoc.data()?.username,
       });
 
       // Link Firebase UID to Telegram user
-      await updateDoc(doc(db, 'telegram_users', telegramId.toString()), {
+      await adminDb.collection('telegram_users').doc(telegramId.toString()).update({
         firebaseUid: tempUid,
-        linkedAt: new Date(),
+        linkedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
       console.log(`Created temporary Firebase user ${tempUid} for Telegram user ${telegramId}`);
@@ -56,14 +56,13 @@ export async function addCreditsToUser(
     }
 
     // Update credits
-    const userRef = doc(db, 'users', firebaseUid);
-    await updateDoc(userRef, {
-      credits: increment(credits),
+    await adminDb.collection('users').doc(firebaseUid).update({
+      credits: admin.firestore.FieldValue.increment(credits),
     });
 
     // Log transaction
-    await setDoc(doc(db, 'users', firebaseUid, 'spending_history', transactionId), {
-      timestamp: Timestamp.now(),
+    await adminDb.collection('users').doc(firebaseUid).collection('spending_history').doc(transactionId).set({
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
       type: 'credit_purchase',
       credits: credits,
       spent: 0,
@@ -91,13 +90,13 @@ export async function activateSubscription(
 ): Promise<boolean> {
   try {
     // Get Firebase UID from Telegram ID
-    const telegramUserDoc = await getDoc(doc(db, 'telegram_users', telegramId.toString()));
-    if (!telegramUserDoc.exists()) {
+    const telegramUserDoc = await adminDb.collection('telegram_users').doc(telegramId.toString()).get();
+    if (!telegramUserDoc.exists) {
       console.error('Telegram user not found:', telegramId);
       return false;
     }
 
-    const firebaseUid = telegramUserDoc.data().firebaseUid;
+    const firebaseUid = telegramUserDoc.data()?.firebaseUid;
     if (!firebaseUid) {
       console.error('Firebase UID not linked for Telegram user:', telegramId);
       // Create a temporary Firebase user
@@ -105,10 +104,10 @@ export async function activateSubscription(
       const currentPeriodEnd = new Date();
       currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
 
-      await setDoc(doc(db, 'users', tempUid), {
+      await adminDb.collection('users').doc(tempUid).set({
         uid: tempUid,
         email: null,
-        displayName: telegramUserDoc.data().firstName,
+        displayName: telegramUserDoc.data()?.firstName,
         photoURL: null,
         emailVerified: false,
         credits: 0,
@@ -117,20 +116,20 @@ export async function activateSubscription(
         subscription: {
           plan: plan,
           status: 'active',
-          currentPeriodEnd: Timestamp.fromDate(currentPeriodEnd),
+          currentPeriodEnd: admin.firestore.Timestamp.fromDate(currentPeriodEnd),
         },
         totalGenerations: 0,
         favoriteModel: null,
         modelUsage: {},
-        createdAt: new Date(),
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
         telegramId: telegramId,
-        telegramUsername: telegramUserDoc.data().username,
+        telegramUsername: telegramUserDoc.data()?.username,
       });
 
       // Link Firebase UID to Telegram user
-      await updateDoc(doc(db, 'telegram_users', telegramId.toString()), {
+      await adminDb.collection('telegram_users').doc(telegramId.toString()).update({
         firebaseUid: tempUid,
-        linkedAt: new Date(),
+        linkedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
       console.log(`Created temporary Firebase user ${tempUid} with subscription ${plan}`);
@@ -142,16 +141,15 @@ export async function activateSubscription(
     currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
 
     // Update subscription
-    const userRef = doc(db, 'users', firebaseUid);
-    await updateDoc(userRef, {
+    await adminDb.collection('users').doc(firebaseUid).update({
       'subscription.plan': plan,
       'subscription.status': 'active',
-      'subscription.currentPeriodEnd': Timestamp.fromDate(currentPeriodEnd),
+      'subscription.currentPeriodEnd': admin.firestore.Timestamp.fromDate(currentPeriodEnd),
     });
 
     // Log transaction
-    await setDoc(doc(db, 'users', firebaseUid, 'spending_history', transactionId), {
-      timestamp: Timestamp.now(),
+    await adminDb.collection('users').doc(firebaseUid).collection('spending_history').doc(transactionId).set({
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
       type: 'subscription_purchase',
       subscriptionPlan: plan,
       spent: 0,
@@ -174,8 +172,8 @@ export async function activateSubscription(
  */
 export async function isInvoiceProcessed(invoiceId: string): Promise<boolean> {
   try {
-    const invoiceDoc = await getDoc(doc(db, 'processed_invoices', invoiceId));
-    return invoiceDoc.exists();
+    const invoiceDoc = await adminDb.collection('processed_invoices').doc(invoiceId).get();
+    return invoiceDoc.exists;
   } catch (error) {
     console.error('Error checking invoice:', error);
     return false;
@@ -190,9 +188,9 @@ export async function markInvoiceAsProcessed(
   userId: string
 ): Promise<void> {
   try {
-    await setDoc(doc(db, 'processed_invoices', invoiceId), {
+    await adminDb.collection('processed_invoices').doc(invoiceId).set({
       invoiceId,
-      processedAt: Timestamp.now(),
+      processedAt: admin.firestore.FieldValue.serverTimestamp(),
       userId,
       status: 'paid',
     });

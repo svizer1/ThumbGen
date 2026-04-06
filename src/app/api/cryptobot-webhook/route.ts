@@ -9,8 +9,7 @@ import {
 } from '@/lib/payment/paymentManager';
 import { getTelegramBotClient } from '@/lib/telegram/bot';
 import { getMessage } from '@/lib/telegram/messages';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -73,8 +72,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Get user language
-    const telegramUserDoc = await getDoc(doc(db, 'telegram_users', telegramId.toString()));
-    const lang = telegramUserDoc.exists() ? (telegramUserDoc.data().language || 'ru') : 'ru';
+    const telegramUserDoc = await adminDb.collection('telegram_users').doc(telegramId.toString()).get();
+    const lang = telegramUserDoc.exists ? (telegramUserDoc.data()?.language || 'ru') : 'ru';
 
     let success = false;
     let rewardText = '';

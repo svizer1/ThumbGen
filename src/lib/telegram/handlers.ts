@@ -9,17 +9,16 @@ import {
   createLanguageKeyboard,
   createPaymentKeyboard,
 } from './keyboards';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin';
 import { getCryptoBotClient } from '../cryptobot/client';
 import { CREDIT_PACKAGES, SUBSCRIPTION_PACKAGES, CryptoCurrency } from '@/types/payment';
 
 // Get user language from Firestore or default to 'ru'
 async function getUserLanguage(telegramId: number): Promise<Language> {
   try {
-    const userDoc = await getDoc(doc(db, 'telegram_users', telegramId.toString()));
-    if (userDoc.exists()) {
-      return (userDoc.data().language as Language) || 'ru';
+    const userDoc = await adminDb.collection('telegram_users').doc(telegramId.toString()).get();
+    if (userDoc.exists) {
+      return (userDoc.data()?.language as Language) || 'ru';
     }
     return 'ru';
   } catch (error) {
@@ -31,8 +30,7 @@ async function getUserLanguage(telegramId: number): Promise<Language> {
 // Set user language
 async function setUserLanguage(telegramId: number, language: Language): Promise<void> {
   try {
-    const userRef = doc(db, 'telegram_users', telegramId.toString());
-    await updateDoc(userRef, { language });
+    await adminDb.collection('telegram_users').doc(telegramId.toString()).update({ language });
   } catch (error) {
     console.error('Error setting user language:', error);
   }
@@ -41,12 +39,12 @@ async function setUserLanguage(telegramId: number, language: Language): Promise<
 // Get or create Telegram user in Firestore
 async function getOrCreateTelegramUser(user: TelegramUser) {
   const telegramId = user.id.toString();
-  const userRef = doc(db, 'telegram_users', telegramId);
-  const userDoc = await getDoc(userRef);
+  const userRef = adminDb.collection('telegram_users').doc(telegramId);
+  const userDoc = await userRef.get();
 
-  if (!userDoc.exists()) {
+  if (!userDoc.exists) {
     // Create new telegram user
-    await setDoc(userRef, {
+    await userRef.set({
       telegramId: user.id,
       username: user.username || null,
       firstName: user.first_name,
@@ -59,37 +57,37 @@ async function getOrCreateTelegramUser(user: TelegramUser) {
     });
   } else {
     // Update last interaction
-    await updateDoc(userRef, {
+    await userRef.update({
       lastInteraction: new Date(),
     });
   }
 
-  return userDoc.exists() ? userDoc.data() : null;
+  return userDoc.exists ? userDoc.data() : null;
 }
 
 // Get Firebase user by Telegram ID
 async function getFirebaseUserByTelegramId(telegramId: number): Promise<any> {
   try {
-    const telegramUserDoc = await getDoc(doc(db, 'telegram_users', telegramId.toString()));
-    if (!telegramUserDoc.exists()) {
+    const telegramUserDoc = await adminDb.collection('telegram_users').doc(telegramId.toString()).get();
+    if (!telegramUserDoc.exists) {
       return null;
     }
 
-    const firebaseUid = telegramUserDoc.data().firebaseUid;
+    const firebaseUid = telegramUserDoc.data()?.firebaseUid;
     if (!firebaseUid) {
       return null;
     }
 
-    const userDoc = await getDoc(doc(db, 'users', firebaseUid));
-    if (!userDoc.exists()) {
+    const userDoc = await adminDb.collection('users').doc(firebaseUid).get();
+    if (!userDoc.exists) {
       return null;
     }
 
     const data = userDoc.data();
     return { 
       uid: firebaseUid, 
-      credits: data.credits || 0,
-      subscription: data.subscription || { plan: 'free', status: 'expired' },
+      credits: data?.credits || 0,
+      subscription: data?.subscription || { plan: 'free', status: 'expired' },
       ...data 
     };
   } catch (error) {
