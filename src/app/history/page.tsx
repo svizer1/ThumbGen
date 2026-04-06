@@ -29,8 +29,8 @@ export default function HistoryPage() {
         const entries: HistoryEntry[] = snapshot.docs.map(doc => {
           const data = doc.data();
           return {
-            id: doc.id,
-            createdAt: data.createdAt,
+            id: data.id || doc.id,
+            createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
             mode: data.mode,
             input: data.input,
             result: data.result,
