@@ -24,16 +24,12 @@ export default function HistoryPage() {
 
     setRefreshing(true);
     try {
-      console.log('Fetching history for user:', user.uid);
       const historyRef = collection(db, 'users', user.uid, 'generations');
       const q = query(historyRef, orderBy('createdAt', 'desc'), limit(50));
       const snapshot = await getDocs(q);
       
-      console.log('Found', snapshot.docs.length, 'history entries');
-      
       const entries: HistoryEntry[] = snapshot.docs.map(doc => {
         const data = doc.data();
-        console.log('History entry:', doc.id, data);
         return {
           id: data.id || doc.id,
           createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
