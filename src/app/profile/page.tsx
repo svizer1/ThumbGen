@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { SpendingTable } from '@/components/profile/SpendingTable';
 import { BalanceModeSwitch } from '@/components/profile/BalanceModeSwitch';
 import { FavoriteModel } from '@/components/profile/FavoriteModel';
+import { TelegramLinkCard } from '@/components/profile/TelegramLinkCard';
 
 export default function ProfilePage() {
   const { user, userData, loading, refreshUserData } = useAuth();
@@ -295,6 +296,11 @@ export default function ProfilePage() {
               </div>
             </div>
           </Card>
+
+          {/* Telegram Link Card */}
+          <div className="animate-fadeInUp stagger-2">
+            <TelegramLinkCard />
+          </div>
 
           {/* Account Settings */}
           <Card className="animate-fadeInUp stagger-2">

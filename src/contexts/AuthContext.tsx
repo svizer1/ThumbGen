@@ -34,6 +34,8 @@ interface UserData {
   favoriteModel: string | null;
   modelUsage: { [modelName: string]: number };
   createdAt: Date;
+  telegramId?: number;
+  telegramUsername?: string;
 }
 
 interface AuthContextType {
