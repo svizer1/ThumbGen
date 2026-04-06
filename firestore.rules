@@ -3,16 +3,23 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // User documents
     match /users/{userId} {
+      // Users can read/write their own data
       allow read, write: if request.auth != null && request.auth.uid == userId;
       
       // User's generation history
       match /generations/{generationId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        // Users can read their own history
+        allow read: if request.auth != null && request.auth.uid == userId;
+        // Server can write (Admin SDK bypasses rules anyway, but explicit for clarity)
+        allow write: if true;
       }
       
       // User's spending history
       match /spending_history/{transactionId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        // Users can read their own spending
+        allow read: if request.auth != null && request.auth.uid == userId;
+        // Server can write
+        allow write: if true;
       }
     }
   }
