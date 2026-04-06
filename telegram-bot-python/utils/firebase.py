@@ -127,8 +127,15 @@ def link_account(telegram_id: int, link_token: str) -> bool:
     
     # Check expiration
     expires_at = token_data.get('expiresAt')
-    if expires_at and expires_at < datetime.now():
-        return False
+    if expires_at:
+        # Convert Firestore timestamp to datetime if needed
+        if hasattr(expires_at, 'timestamp'):
+            expires_at = datetime.fromtimestamp(expires_at.timestamp())
+        # Make sure both datetimes are naive for comparison
+        if expires_at.tzinfo is not None:
+            expires_at = expires_at.replace(tzinfo=None)
+        if expires_at < datetime.now():
+            return False
     
     firebase_uid = token_data.get('userId')
     
