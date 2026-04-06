@@ -53,6 +53,7 @@ export interface TelegramInlineKeyboardButton {
   text: string;
   callback_data?: string;
   url?: string;
+  icon_custom_emoji_id?: string;
 }
 
 export interface TelegramInlineKeyboardMarkup {
