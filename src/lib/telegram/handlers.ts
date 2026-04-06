@@ -41,37 +41,20 @@ async function getOrCreateTelegramUser(user: TelegramUser) {
   try {
     console.log('getOrCreateTelegramUser: Starting for user', user.id);
     const telegramId = user.id.toString();
-    const userRef = adminDb.collection('telegram_users').doc(telegramId);
     
-    console.log('getOrCreateTelegramUser: Getting user doc');
-    const userDoc = await userRef.get();
-    console.log('getOrCreateTelegramUser: User doc exists?', userDoc.exists);
-
-    if (!userDoc.exists) {
-      console.log('getOrCreateTelegramUser: Creating new user');
-      // Create new telegram user
-      await userRef.set({
-        telegramId: user.id,
-        username: user.username || null,
-        firstName: user.first_name,
-        lastName: user.last_name || null,
-        language: user.language_code === 'en' ? 'en' : 'ru',
-        firebaseUid: null, // Will be set when user links account
-        linkedAt: null,
-        createdAt: new Date(),
-        lastInteraction: new Date(),
-      });
-      console.log('getOrCreateTelegramUser: User created');
-    } else {
-      console.log('getOrCreateTelegramUser: Updating last interaction');
-      // Update last interaction
-      await userRef.update({
-        lastInteraction: new Date(),
-      });
-      console.log('getOrCreateTelegramUser: Updated');
-    }
-
-    return userDoc.exists ? userDoc.data() : null;
+    // Use set with merge instead of get + conditional set
+    console.log('getOrCreateTelegramUser: Setting user data with merge');
+    await adminDb.collection('telegram_users').doc(telegramId).set({
+      telegramId: user.id,
+      username: user.username || null,
+      firstName: user.first_name,
+      lastName: user.last_name || null,
+      language: user.language_code === 'en' ? 'en' : 'ru',
+      lastInteraction: new Date(),
+    }, { merge: true });
+    
+    console.log('getOrCreateTelegramUser: User data saved');
+    return null;
   } catch (error) {
     console.error('getOrCreateTelegramUser: Error:', error);
     throw error;

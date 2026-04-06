@@ -1,6 +1,16 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Telegram users collection (server-side only)
+    match /telegram_users/{telegramId} {
+      allow read, write: if true; // Admin SDK will handle this
+    }
+    
+    // Processed invoices (server-side only)
+    match /processed_invoices/{invoiceId} {
+      allow read, write: if true; // Admin SDK will handle this
+    }
+    
     // User documents
     match /users/{userId} {
       // Users can read/write their own data
