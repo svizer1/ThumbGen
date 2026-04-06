@@ -1,52 +1,60 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, History } from 'lucide-react';
+import { ArrowLeft, History, RefreshCw } from 'lucide-react';
 import { HistoryCard } from '@/components/history/HistoryCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { HistoryEntry } from '@/types';
+import { Button } from '@/components/ui/Button';
 
 export default function HistoryPage() {
   const { user, loading } = useAuth();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    async function fetchHistory() {
-      if (!user) {
-        setLoadingHistory(false);
-        return;
-      }
-
-      try {
-        const historyRef = collection(db, 'users', user.uid, 'generations');
-        const q = query(historyRef, orderBy('createdAt', 'desc'), limit(50));
-        const snapshot = await getDocs(q);
-        
-        const entries: HistoryEntry[] = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: data.id || doc.id,
-            createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-            mode: data.mode,
-            input: data.input,
-            result: data.result,
-            status: data.status,
-            error: data.error,
-          };
-        });
-        
-        setHistory(entries);
-      } catch (error) {
-        console.error('Error fetching history:', error);
-      } finally {
-        setLoadingHistory(false);
-      }
+  async function fetchHistory() {
+    if (!user) {
+      setLoadingHistory(false);
+      return;
     }
 
+    setRefreshing(true);
+    try {
+      console.log('Fetching history for user:', user.uid);
+      const historyRef = collection(db, 'users', user.uid, 'generations');
+      const q = query(historyRef, orderBy('createdAt', 'desc'), limit(50));
+      const snapshot = await getDocs(q);
+      
+      console.log('Found', snapshot.docs.length, 'history entries');
+      
+      const entries: HistoryEntry[] = snapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log('History entry:', doc.id, data);
+        return {
+          id: data.id || doc.id,
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+          mode: data.mode,
+          input: data.input,
+          result: data.result,
+          status: data.status,
+          error: data.error,
+        };
+      });
+      
+      setHistory(entries);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+    } finally {
+      setLoadingHistory(false);
+      setRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
     fetchHistory();
   }, [user]);
 
@@ -100,6 +108,16 @@ export default function HistoryPage() {
             <p className="text-[var(--text-muted)] text-sm mt-0.5">{history.length} записей</p>
           </div>
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchHistory}
+          loading={refreshing}
+        >
+          <RefreshCw className="w-4 h-4" />
+          Обновить
+        </Button>
       </div>
 
       {/* Empty state */}

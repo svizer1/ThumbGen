@@ -238,10 +238,12 @@ export async function POST(request: NextRequest) {
 
   try {
     await saveToHistory(entry);
+    console.log('[generate] History saved to local file');
     
     // Save to user's personal history only if user is authenticated
     if (userId) {
-      await adminDb.collection('users').doc(userId).collection('generations').add({
+      console.log('[generate] Saving to Firestore for user:', userId);
+      const docRef = await adminDb.collection('users').doc(userId).collection('generations').add({
         id: entry.id,
         createdAt: FieldValue.serverTimestamp(),
         mode: entry.mode,
@@ -251,7 +253,9 @@ export async function POST(request: NextRequest) {
         ...(entry.error && { error: entry.error }),
         userId,
       });
-      console.log('[generate] History saved to Firestore');
+      console.log('[generate] History saved to Firestore with ID:', docRef.id);
+    } else {
+      console.log('[generate] No userId, skipping Firestore save');
     }
   } catch (err) {
     console.error('[generate] Failed to save history:', err);
