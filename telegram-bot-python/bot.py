@@ -1,5 +1,6 @@
 import os
 import logging
+import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
 from telegram.constants import ParseMode
@@ -443,7 +444,7 @@ async def cancel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['awaiting_broadcast'] = False
     await update.message.reply_text("❌ Действие отменено")
 
-def main():
+async def main():
     # Create application
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     
@@ -459,7 +460,26 @@ def main():
     
     # Start bot
     logger.info("Bot started!")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+    
+    # Run until stopped
+    import signal
+    stop = asyncio.Event()
+    
+    def signal_handler(sig, frame):
+        stop.set()
+    
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    await stop.wait()
+    
+    # Cleanup
+    await application.updater.stop()
+    await application.stop()
+    await application.shutdown()
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
