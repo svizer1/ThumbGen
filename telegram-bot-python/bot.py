@@ -81,20 +81,20 @@ def get_message(lang, key, **kwargs):
 def main_menu_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton("Купить кредиты", callback_data="buy_credits", custom_emoji_id="5904462880941545555"),
-            InlineKeyboardButton("Купить подписку", callback_data="buy_subscription", custom_emoji_id="5870633910337015697"),
+            InlineKeyboardButton("Купить кредиты", callback_data="buy_credits", icon_custom_emoji_id="5904462880941545555"),
+            InlineKeyboardButton("Купить подписку", callback_data="buy_subscription", icon_custom_emoji_id="5870633910337015697"),
         ],
-        [InlineKeyboardButton("Мой баланс", callback_data="balance", custom_emoji_id="5769126056262898415")],
-        [InlineKeyboardButton("Помощь", callback_data="help", custom_emoji_id="6028435952299413210")],
+        [InlineKeyboardButton("Мой баланс", callback_data="balance", icon_custom_emoji_id="5769126056262898415")],
+        [InlineKeyboardButton("Помощь", callback_data="help", icon_custom_emoji_id="6028435952299413210")],
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def admin_menu_keyboard():
     keyboard = [
-        [InlineKeyboardButton("📊 Статистика", callback_data="admin_stats", custom_emoji_id="5870921681735781843")],
-        [InlineKeyboardButton("📢 Рассылка", callback_data="admin_broadcast", custom_emoji_id="6039422865189638057")],
-        [InlineKeyboardButton("👥 Пользователи", callback_data="admin_users", custom_emoji_id="5870772616305839506")],
-        [InlineKeyboardButton("Назад", callback_data="main_menu", custom_emoji_id="5893057118545646106")],
+        [InlineKeyboardButton("📊 Статистика", callback_data="admin_stats", icon_custom_emoji_id="5870921681735781843")],
+        [InlineKeyboardButton("📢 Рассылка", callback_data="admin_broadcast", icon_custom_emoji_id="6039422865189638057")],
+        [InlineKeyboardButton("👥 Пользователи", callback_data="admin_users", icon_custom_emoji_id="5870772616305839506")],
+        [InlineKeyboardButton("Назад", callback_data="main_menu", icon_custom_emoji_id="5893057118545646106")],
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -103,24 +103,24 @@ def credit_packages_keyboard():
     for pkg in CREDIT_PACKAGES:
         total = pkg['credits'] + pkg['bonus']
         text = f"{total} кредитов - ${pkg['price']}"
-        keyboard.append([InlineKeyboardButton(text, callback_data=f"credits_{pkg['credits']}", custom_emoji_id="5904462880941545555")])
-    keyboard.append([InlineKeyboardButton("Назад", callback_data="main_menu", custom_emoji_id="5893057118545646106")])
+        keyboard.append([InlineKeyboardButton(text, callback_data=f"credits_{pkg['credits']}", icon_custom_emoji_id="5904462880941545555")])
+    keyboard.append([InlineKeyboardButton("Назад", callback_data="main_menu", icon_custom_emoji_id="5893057118545646106")])
     return InlineKeyboardMarkup(keyboard)
 
 def currency_keyboard(purchase_type):
     keyboard = [
-        [InlineKeyboardButton("TON", callback_data=f"currency_{purchase_type}_TON", custom_emoji_id="5260752406890711732")],
-        [InlineKeyboardButton("USDT", callback_data=f"currency_{purchase_type}_USDT", custom_emoji_id="5904462880941545555")],
-        [InlineKeyboardButton("BTC", callback_data=f"currency_{purchase_type}_BTC", custom_emoji_id="5904462880941545555")],
-        [InlineKeyboardButton("ETH", callback_data=f"currency_{purchase_type}_ETH", custom_emoji_id="5904462880941545555")],
-        [InlineKeyboardButton("Назад", callback_data="buy_menu", custom_emoji_id="5893057118545646106")],
+        [InlineKeyboardButton("TON", callback_data=f"currency_{purchase_type}_TON", icon_custom_emoji_id="5260752406890711732")],
+        [InlineKeyboardButton("USDT", callback_data=f"currency_{purchase_type}_USDT", icon_custom_emoji_id="5904462880941545555")],
+        [InlineKeyboardButton("BTC", callback_data=f"currency_{purchase_type}_BTC", icon_custom_emoji_id="5904462880941545555")],
+        [InlineKeyboardButton("ETH", callback_data=f"currency_{purchase_type}_ETH", icon_custom_emoji_id="5904462880941545555")],
+        [InlineKeyboardButton("Назад", callback_data="buy_menu", icon_custom_emoji_id="5893057118545646106")],
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def payment_keyboard(pay_url):
     keyboard = [
-        [InlineKeyboardButton("Оплатить", url=pay_url, custom_emoji_id="5890848474563352982")],
-        [InlineKeyboardButton("Главное меню", callback_data="main_menu", custom_emoji_id="5873147866364514353")],
+        [InlineKeyboardButton("Оплатить", url=pay_url, icon_custom_emoji_id="5890848474563352982")],
+        [InlineKeyboardButton("Главное меню", callback_data="main_menu", icon_custom_emoji_id="5873147866364514353")],
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -182,12 +182,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user.id in ADMIN_IDS:
         keyboard = [
             [
-                InlineKeyboardButton("Купить кредиты", callback_data="buy_credits", custom_emoji_id="5904462880941545555"),
-                InlineKeyboardButton("Купить подписку", callback_data="buy_subscription", custom_emoji_id="5870633910337015697"),
+                InlineKeyboardButton("Купить кредиты", callback_data="buy_credits", icon_custom_emoji_id="5904462880941545555"),
+                InlineKeyboardButton("Купить подписку", callback_data="buy_subscription", icon_custom_emoji_id="5870633910337015697"),
             ],
-            [InlineKeyboardButton("Мой баланс", callback_data="balance", custom_emoji_id="5769126056262898415")],
-            [InlineKeyboardButton("⚙️ Админ панель", callback_data="admin_panel", custom_emoji_id="5870982283724328568")],
-            [InlineKeyboardButton("Помощь", callback_data="help", custom_emoji_id="6028435952299413210")],
+            [InlineKeyboardButton("Мой баланс", callback_data="balance", icon_custom_emoji_id="5769126056262898415")],
+            [InlineKeyboardButton("⚙️ Админ панель", callback_data="admin_panel", icon_custom_emoji_id="5870982283724328568")],
+            [InlineKeyboardButton("Помощь", callback_data="help", icon_custom_emoji_id="6028435952299413210")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
     else:
