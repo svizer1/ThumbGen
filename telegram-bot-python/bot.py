@@ -40,6 +40,9 @@ db = firestore.client()
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 CRYPTOBOT_API_TOKEN = os.getenv('CRYPTOBOT_API_TOKEN')
 
+# Admin IDs (замените на ваш Telegram ID)
+ADMIN_IDS = [5887561026]  # Ваш Telegram ID
+
 # Pricing data
 CREDIT_PACKAGES = [
     {'credits': 50, 'price': 3, 'bonus': 0},
@@ -82,6 +85,15 @@ def main_menu_keyboard():
         ],
         [InlineKeyboardButton("Мой баланс", callback_data="balance", icon_custom_emoji_id="5769126056262898415")],
         [InlineKeyboardButton("Помощь", callback_data="help", icon_custom_emoji_id="6028435952299413210")],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+def admin_menu_keyboard():
+    keyboard = [
+        [InlineKeyboardButton("📊 Статистика", callback_data="admin_stats", icon_custom_emoji_id="5870921681735781843")],
+        [InlineKeyboardButton("📢 Рассылка", callback_data="admin_broadcast", icon_custom_emoji_id="6039422865189638057")],
+        [InlineKeyboardButton("👥 Пользователи", callback_data="admin_users", icon_custom_emoji_id="5870772616305839506")],
+        [InlineKeyboardButton("Назад", callback_data="main_menu", icon_custom_emoji_id="5893057118545646106")],
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -165,10 +177,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_or_create_user(user.id, user.first_name, user.username)
     
+    # Check if admin
+    if user.id in ADMIN_IDS:
+        keyboard = [
+            [
+                InlineKeyboardButton("Купить кредиты", callback_data="buy_credits", icon_custom_emoji_id="5904462880941545555"),
+                InlineKeyboardButton("Купить подписку", callback_data="buy_subscription", icon_custom_emoji_id="5870633910337015697"),
+            ],
+            [InlineKeyboardButton("Мой баланс", callback_data="balance", icon_custom_emoji_id="5769126056262898415")],
+            [InlineKeyboardButton("⚙️ Админ панель", callback_data="admin_panel", icon_custom_emoji_id="5870982283724328568")],
+            [InlineKeyboardButton("Помощь", callback_data="help", icon_custom_emoji_id="6028435952299413210")],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+    else:
+        reply_markup = main_menu_keyboard()
+    
     await update.message.reply_text(
         get_message('ru', 'welcome'),
         parse_mode=ParseMode.HTML,
-        reply_markup=main_menu_keyboard()
+        reply_markup=reply_markup
     )
 
 async def balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -193,12 +220,113 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.HTML
     )
 
+# Admin commands
+async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    if user.id not in ADMIN_IDS:
+        await update.message.reply_text("❌ У вас нет доступа к админ панели")
+        return
+    
+    await update.message.reply_text(
+        "<tg-emoji emoji-id=\"5870982283724328568\">⚙️</tg-emoji> <b>Админ панель</b>\n\nВыберите действие:",
+        parse_mode=ParseMode.HTML,
+        reply_markup=admin_menu_keyboard()
+    )
+
+# Get all users from Firebase
+def get_all_users():
+    users_ref = db.collection('telegram_users')
+    docs = users_ref.stream()
+    return [doc.to_dict() for doc in docs]
+
+# Get statistics
+def get_statistics():
+    users = get_all_users()
+    total_users = len(users)
+    
+    # Count users with linked Firebase accounts
+    linked_users = sum(1 for u in users if u.get('firebaseUid'))
+    
+    return {
+        'total_users': total_users,
+        'linked_users': linked_users,
+        'unlinked_users': total_users - linked_users
+    }
+
 # Callback query handler
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
     data = query.data
+    user = query.from_user
+    
+    # Admin panel
+    if data == "admin_panel":
+        if user.id not in ADMIN_IDS:
+            await query.answer("❌ У вас нет доступа", show_alert=True)
+            return
+        
+        await query.edit_message_text(
+            "<tg-emoji emoji-id=\"5870982283724328568\">⚙️</tg-emoji> <b>Админ панель</b>\n\nВыберите действие:",
+            parse_mode=ParseMode.HTML,
+            reply_markup=admin_menu_keyboard()
+        )
+        return
+    
+    # Admin stats
+    elif data == "admin_stats":
+        if user.id not in ADMIN_IDS:
+            await query.answer("❌ У вас нет доступа", show_alert=True)
+            return
+        
+        stats = get_statistics()
+        text = f"""<tg-emoji emoji-id="5870921681735781843">📊</tg-emoji> <b>Статистика бота</b>
+
+<tg-emoji emoji-id="5870772616305839506">👥</tg-emoji> Всего пользователей: <b>{stats['total_users']}</b>
+<tg-emoji emoji-id="5891207662678317861">👤</tg-emoji> С привязанным аккаунтом: <b>{stats['linked_users']}</b>
+<tg-emoji emoji-id="5893192487324880883">👤</tg-emoji> Без привязки: <b>{stats['unlinked_users']}</b>"""
+        
+        await query.edit_message_text(
+            text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=admin_menu_keyboard()
+        )
+        return
+    
+    # Admin broadcast
+    elif data == "admin_broadcast":
+        if user.id not in ADMIN_IDS:
+            await query.answer("❌ У вас нет доступа", show_alert=True)
+            return
+        
+        await query.edit_message_text(
+            "<tg-emoji emoji-id=\"6039422865189638057\">📣</tg-emoji> <b>Рассылка сообщений</b>\n\nОтправьте сообщение, которое хотите разослать всем пользователям.\n\nИспользуйте /cancel для отмены.",
+            parse_mode=ParseMode.HTML,
+            reply_markup=admin_menu_keyboard()
+        )
+        context.user_data['awaiting_broadcast'] = True
+        return
+    
+    # Admin users list
+    elif data == "admin_users":
+        if user.id not in ADMIN_IDS:
+            await query.answer("❌ У вас нет доступа", show_alert=True)
+            return
+        
+        users = get_all_users()
+        text = "<tg-emoji emoji-id=\"5870772616305839506\">👥</tg-emoji> <b>Последние пользователи:</b>\n\n"
+        
+        for u in users[-10:]:  # Last 10 users
+            username = f"@{u.get('username')}" if u.get('username') else "без username"
+            text += f"• {u.get('firstName')} ({username})\n"
+        
+        await query.edit_message_text(
+            text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=admin_menu_keyboard()
+        )
+        return
     
     if data == "main_menu":
         await query.edit_message_text(
@@ -275,6 +403,46 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=main_menu_keyboard()
         )
 
+# Handle broadcast messages
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    
+    # Check if admin is sending broadcast
+    if user.id in ADMIN_IDS and context.user_data.get('awaiting_broadcast'):
+        context.user_data['awaiting_broadcast'] = False
+        
+        broadcast_text = update.message.text
+        users = get_all_users()
+        
+        await update.message.reply_text(
+            f"<tg-emoji emoji-id=\"5345906554510012647\">🔄</tg-emoji> Начинаю рассылку для {len(users)} пользователей...",
+            parse_mode=ParseMode.HTML
+        )
+        
+        success = 0
+        failed = 0
+        
+        for u in users:
+            try:
+                await context.bot.send_message(
+                    chat_id=u['telegramId'],
+                    text=broadcast_text,
+                    parse_mode=ParseMode.HTML
+                )
+                success += 1
+            except Exception as e:
+                logger.error(f"Failed to send to {u['telegramId']}: {e}")
+                failed += 1
+        
+        await update.message.reply_text(
+            f"<tg-emoji emoji-id=\"5870633910337015697\">✅</tg-emoji> <b>Рассылка завершена!</b>\n\n<tg-emoji emoji-id=\"5891207662678317861\">👤</tg-emoji> Успешно: <b>{success}</b>\n<tg-emoji emoji-id=\"5893192487324880883\">👤</tg-emoji> Ошибок: <b>{failed}</b>",
+            parse_mode=ParseMode.HTML
+        )
+
+async def cancel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['awaiting_broadcast'] = False
+    await update.message.reply_text("❌ Действие отменено")
+
 def main():
     # Create application
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
@@ -284,7 +452,10 @@ def main():
     application.add_handler(CommandHandler("balance", balance))
     application.add_handler(CommandHandler("buy", buy))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("admin", admin_command))
+    application.add_handler(CommandHandler("cancel", cancel_command))
     application.add_handler(CallbackQueryHandler(button_callback))
+    application.add_handler(MessageHandler(None, handle_message))
     
     # Start bot
     logger.info("Bot started!")
