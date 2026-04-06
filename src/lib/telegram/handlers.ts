@@ -98,23 +98,41 @@ async function getFirebaseUserByTelegramId(telegramId: number): Promise<any> {
 
 // Handle /start command
 export async function handleStart(update: TelegramUpdate) {
-  const message = update.message;
-  if (!message || !message.from) return;
+  try {
+    console.log('handleStart called');
+    const message = update.message;
+    if (!message || !message.from) {
+      console.log('No message or from');
+      return;
+    }
 
-  const bot = getTelegramBotClient();
-  const user = message.from;
-  await getOrCreateTelegramUser(user);
+    console.log('Getting bot client');
+    const bot = getTelegramBotClient();
+    const user = message.from;
+    
+    console.log('Creating/getting telegram user');
+    await getOrCreateTelegramUser(user);
 
-  const lang = await getUserLanguage(user.id);
-  const text = getMessage(lang, 'welcome');
-  const keyboard = createMainMenuKeyboard(lang);
+    console.log('Getting user language');
+    const lang = await getUserLanguage(user.id);
+    
+    console.log('Getting message text');
+    const text = getMessage(lang, 'welcome');
+    
+    console.log('Creating keyboard');
+    const keyboard = createMainMenuKeyboard(lang);
 
-  await bot.sendMessage({
-    chat_id: message.chat.id,
-    text,
-    parse_mode: 'HTML',
-    reply_markup: keyboard,
-  });
+    console.log('Sending message to chat:', message.chat.id);
+    await bot.sendMessage({
+      chat_id: message.chat.id,
+      text,
+      parse_mode: 'HTML',
+      reply_markup: keyboard,
+    });
+    console.log('Message sent successfully');
+  } catch (error) {
+    console.error('Error in handleStart:', error);
+  }
 }
 
 // Handle /balance command
