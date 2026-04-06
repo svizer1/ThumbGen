@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, Mail, Lock, User as UserIcon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 interface SignupModalProps {
   isOpen: boolean;
@@ -17,12 +18,20 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { signUp, signInWithGoogle } = useAuth();
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!recaptchaToken) {
+      alert('Пожалуйста, подтвердите, что вы не робот');
+      return;
+    }
+    
     setLoading(true);
     try {
       await signUp(email, password, displayName);
@@ -30,8 +39,12 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
       setEmail('');
       setPassword('');
       setDisplayName('');
+      setRecaptchaToken(null);
+      recaptchaRef.current?.reset();
     } catch (error) {
       // Error handled in AuthContext
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -168,7 +181,18 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
               </p>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            {/* reCAPTCHA */}
+            <div className="flex justify-center">
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''}
+                onChange={(token) => setRecaptchaToken(token)}
+                onExpired={() => setRecaptchaToken(null)}
+                theme="dark"
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading || !recaptchaToken}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />

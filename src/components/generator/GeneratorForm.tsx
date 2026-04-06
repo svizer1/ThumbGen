@@ -125,6 +125,13 @@ export function GeneratorForm() {
   const generate = useCallback(async () => {
     if (!validate()) return;
 
+    // Check email verification for API mode
+    if (mode === 'api' && user && !user.emailVerified) {
+      setGlobalError('Подтвердите email для генерации изображений. Проверьте почту!');
+      toast.error('Требуется подтверждение email');
+      return;
+    }
+
     // Check credits before generation for API mode
     if (mode === 'api' && userData) {
       if (userData.credits <= 0) {
