@@ -1,12 +1,84 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowLeft, History } from 'lucide-react';
-import { getHistory } from '@/lib/history-store';
 import { HistoryCard } from '@/components/history/HistoryCard';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { HistoryEntry } from '@/types';
 
-export const dynamic = 'force-dynamic';
+export default function HistoryPage() {
+  const { user, loading } = useAuth();
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
 
-export default async function HistoryPage() {
-  const history = await getHistory();
+  useEffect(() => {
+    async function fetchHistory() {
+      if (!user) {
+        setLoadingHistory(false);
+        return;
+      }
+
+      try {
+        const historyRef = collection(db, 'users', user.uid, 'generations');
+        const q = query(historyRef, orderBy('createdAt', 'desc'), limit(50));
+        const snapshot = await getDocs(q);
+        
+        const entries: HistoryEntry[] = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            createdAt: data.createdAt,
+            mode: data.mode,
+            input: data.input,
+            result: data.result,
+            status: data.status,
+            error: data.error,
+          };
+        });
+        
+        setHistory(entries);
+      } catch (error) {
+        console.error('Error fetching history:', error);
+      } finally {
+        setLoadingHistory(false);
+      }
+    }
+
+    fetchHistory();
+  }, [user]);
+
+  if (loading || loadingHistory) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)]"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="text-center py-24">
+          <div className="w-16 h-16 bg-[var(--bg-card)] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[var(--border-default)]">
+            <History className="w-8 h-8 text-[var(--text-muted)]" />
+          </div>
+          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">Требуется авторизация</h3>
+          <p className="text-[var(--text-muted)] text-sm mb-6">
+            Войдите в систему, чтобы увидеть историю генераций.
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 bg-[var(--accent)] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            На главную
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -25,25 +97,9 @@ export default async function HistoryPage() {
               <History className="w-6 h-6 text-[var(--accent)]" />
               История генераций
             </h1>
-            <p className="text-[var(--text-muted)] text-sm mt-0.5">{history.length} записей сохранено локально</p>
+            <p className="text-[var(--text-muted)] text-sm mt-0.5">{history.length} записей</p>
           </div>
         </div>
-
-        {history.length > 0 && (
-          <form
-            action={async () => {
-              'use server';
-              // Clear via API is handled client-side; this is just a UI hint
-            }}
-          >
-            <Link
-              href="/history"
-              className="text-xs text-red-400/70 hover:text-red-400 transition-colors px-3 py-1.5 border border-red-500/20 rounded-lg hover:bg-red-500/10"
-            >
-              Очистить всё
-            </Link>
-          </form>
-        )}
       </div>
 
       {/* Empty state */}
