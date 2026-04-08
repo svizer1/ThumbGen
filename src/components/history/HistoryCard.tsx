@@ -174,7 +174,7 @@
                   {entry.input.details?.emotion && <Tag>{entry.input.details.emotion}</Tag>}
                   {entry.input.details?.style && <Tag>{entry.input.details.style}</Tag>}
                   {entry.input.details?.composition && <Tag>{entry.input.details.composition}</Tag>}
-                  {entry.input.sourceImageUrls?.length > 0 && <Tag>{entry.input.sourceImageUrls.length} source img</Tag>}
+                  {entry.input.sourceImageUrls && entry.input.sourceImageUrls.length > 0 && <Tag>{entry.input.sourceImageUrls.length} source img</Tag>}
                   {entry.input.referenceImageUrl && <Tag>Reference style</Tag>}
                 </>
               )}

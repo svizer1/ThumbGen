@@ -9,15 +9,28 @@ export interface BuiltPrompt {
 export function buildThumbnailPrompt(input: GenerationInput): BuiltPrompt {
   const parts: string[] = [];
 
+  // Default to empty details if missing (for wildberries mode or older generations)
+  const details = input.details || {
+    face: '',
+    emotion: '',
+    objects: '',
+    background: '',
+    colors: '',
+    thumbnailText: '',
+    composition: '',
+    style: '',
+    extraDetails: ''
+  };
+
   // ── Priority 1: Main subject (most important) ──────────────────────────────
-  if (input.details.face.trim()) {
-    parts.push(`(${input.details.face.trim()}:1.3)`);
+  if (details.face.trim()) {
+    parts.push(`(${details.face.trim()}:1.3)`);
   }
 
   // ── Priority 2: Emotion (critical for thumbnails) ──────────────────────────
-  if (input.details.emotion.trim()) {
+  if (details.emotion.trim()) {
     parts.push(
-      `(${input.details.emotion.toLowerCase()} expression:1.2), highly expressive, dramatic facial features`
+      `(${details.emotion.toLowerCase()} expression:1.2), highly expressive, dramatic facial features`
     );
   }
 
@@ -27,45 +40,45 @@ export function buildThumbnailPrompt(input: GenerationInput): BuiltPrompt {
   }
 
   // ── Priority 4: Text overlay (very important for YouTube) ──────────────────
-  if (input.details.thumbnailText.trim()) {
+  if (details.thumbnailText.trim()) {
     parts.push(
-      `(bold text overlay "${input.details.thumbnailText.trim()}":1.2), large impactful typography, white text with black outline and drop shadow, highly readable`
+      `(bold text overlay "${details.thumbnailText.trim()}":1.2), large impactful typography, white text with black outline and drop shadow, highly readable`
     );
   }
 
   // ── Priority 5: Objects / props ────────────────────────────────────────────
-  if (input.details.objects.trim()) {
-    parts.push(`featuring ${input.details.objects.trim()}`);
+  if (details.objects.trim()) {
+    parts.push(`featuring ${details.objects.trim()}`);
   }
 
   // ── Priority 6: Composition ────────────────────────────────────────────────
-  if (input.details.composition.trim()) {
-    parts.push(`(${input.details.composition.trim()}:1.1)`);
+  if (details.composition.trim()) {
+    parts.push(`(${details.composition.trim()}:1.1)`);
   } else {
     // Default composition for thumbnails
     parts.push('rule of thirds composition, subject prominently positioned');
   }
 
   // ── Priority 7: Background ─────────────────────────────────────────────────
-  if (input.details.background.trim()) {
-    parts.push(`background: ${input.details.background.trim()}`);
+  if (details.background.trim()) {
+    parts.push(`background: ${details.background.trim()}`);
   }
 
   // ── Priority 8: Color palette ──────────────────────────────────────────────
-  if (input.details.colors.trim()) {
-    parts.push(`(color scheme: ${input.details.colors.trim()}:1.1), highly saturated, vibrant`);
+  if (details.colors.trim()) {
+    parts.push(`(color scheme: ${details.colors.trim()}:1.1), highly saturated, vibrant`);
   } else {
     parts.push('vibrant saturated colors, high color contrast');
   }
 
   // ── Priority 9: Style ──────────────────────────────────────────────────────
-  if (input.details.style.trim()) {
-    parts.push(`visual style: ${input.details.style.trim()}`);
+  if (details.style.trim()) {
+    parts.push(`visual style: ${details.style.trim()}`);
   }
 
   // ── Priority 10: Extra details ─────────────────────────────────────────────
-  if (input.details.extraDetails.trim()) {
-    parts.push(input.details.extraDetails.trim());
+  if (details.extraDetails.trim()) {
+    parts.push(details.extraDetails.trim());
   }
 
   // ── Reference hints ────────────────────────────────────────────────────────
@@ -75,7 +88,7 @@ export function buildThumbnailPrompt(input: GenerationInput): BuiltPrompt {
     parts.push('matching the visual style and layout of the reference thumbnail');
   }
 
-  if (input.sourceImageUrls.length > 0) {
+  if (input.sourceImageUrls && input.sourceImageUrls.length > 0) {
     parts.push('incorporating visual elements from the provided source images');
   }
 

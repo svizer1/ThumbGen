@@ -200,59 +200,72 @@ function cleanEnhancedPrompt(enhanced: string, original: string): string {
 export function enhancePrompt(input: GenerationInput): string {
   const parts: string[] = [];
   
+  // Default details to handle optional types safely
+  const details = input.details || {
+    face: '',
+    emotion: '',
+    objects: '',
+    background: '',
+    colors: '',
+    thumbnailText: '',
+    composition: '',
+    style: '',
+    extraDetails: ''
+  };
+
   // 1. Основное описание (если есть)
-  if (input.generalDescription.trim()) {
+  if (input.generalDescription?.trim()) {
     parts.push(input.generalDescription.trim());
   }
 
   // 2. Детали лица/персонажа
-  if (input.details.face.trim()) {
-    parts.push(`Subject: ${input.details.face.trim()}`);
+  if (details.face?.trim()) {
+    parts.push(`Subject: ${details.face.trim()}`);
   }
 
   // 3. Эмоция
-  if (input.details.emotion.trim()) {
-    parts.push(`with ${input.details.emotion} expression, highly expressive and dramatic`);
+  if (details.emotion?.trim()) {
+    parts.push(`with ${details.emotion} expression, highly expressive and dramatic`);
   }
 
   // 4. Объекты
-  if (input.details.objects.trim()) {
-    parts.push(`featuring ${input.details.objects.trim()}`);
+  if (details.objects?.trim()) {
+    parts.push(`featuring ${details.objects.trim()}`);
   }
 
   // 5. Фон
-  if (input.details.background.trim()) {
-    parts.push(`background: ${input.details.background.trim()}`);
+  if (details.background?.trim()) {
+    parts.push(`background: ${details.background.trim()}`);
   }
 
   // 6. Цвета
-  if (input.details.colors.trim()) {
-    parts.push(`color palette: ${input.details.colors.trim()}, highly saturated`);
+  if (details.colors?.trim()) {
+    parts.push(`color palette: ${details.colors.trim()}, highly saturated`);
   }
 
   // 7. Текст на миниатюре
-  if (input.details.thumbnailText.trim()) {
-    parts.push(`bold impactful text overlay reading "${input.details.thumbnailText.trim()}", large sans-serif font, white text with drop shadow`);
+  if (details.thumbnailText?.trim()) {
+    parts.push(`bold impactful text overlay reading "${details.thumbnailText.trim()}", large sans-serif font, white text with drop shadow`);
   }
 
   // 8. Композиция
-  if (input.details.composition.trim()) {
-    parts.push(`composition: ${input.details.composition.trim()}`);
+  if (details.composition?.trim()) {
+    parts.push(`composition: ${details.composition.trim()}`);
   }
 
   // 9. Стиль
-  if (input.details.style.trim()) {
-    parts.push(`style: ${input.details.style.trim()}`);
+  if (details.style?.trim()) {
+    parts.push(`style: ${details.style.trim()}`);
   }
 
   // 10. Дополнительные детали
-  if (input.details.extraDetails.trim()) {
-    parts.push(input.details.extraDetails.trim());
+  if (details.extraDetails?.trim()) {
+    parts.push(details.extraDetails.trim());
   }
 
   // 11. Добавляем упоминание об исходных изображениях
   if (input.sourceImageUrls && input.sourceImageUrls.length > 0) {
-    parts.push('incorporating visual elements from the provided source images');
+    parts.push(`Note: Should incorporate visual elements from ${input.sourceImageUrls.length} provided source images`);
   }
 
   // 12. Добавляем упоминание о референсе

@@ -1,4 +1,4 @@
-export type GenerationMode = 'prompt' | 'api';
+export type GenerationMode = 'prompt' | 'api' | 'wildberries';
 
 export interface DetailedFields {
   face: string;
@@ -14,9 +14,9 @@ export interface DetailedFields {
 
 export interface GenerationInput {
   generalDescription: string;
-  details: DetailedFields;
+  details?: DetailedFields;
   mode: GenerationMode;
-  sourceImageUrls: string[];
+  sourceImageUrls?: string[];
   referenceImageUrl?: string;
   referenceDescription?: string;
   characterImageUrl?: string;
@@ -26,6 +26,8 @@ export interface GenerationInput {
   bytezModel?: string;
   huggingfaceModel?: string;
   googleAIModel?: string;
+  product?: any;
+  options?: any;
 }
 
 export interface GenerationResult {
