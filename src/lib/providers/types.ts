@@ -8,6 +8,7 @@ export interface GenerationRequest {
   steps?: number;
   guidanceScale?: number;
   generationType?: 'text-to-image' | 'image-to-image';
+  strength?: number; // Для image-to-image: насколько сильно изменять (0.0-1.0)
 }
 
 export interface GenerationResponse {

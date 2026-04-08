@@ -10,9 +10,10 @@ export interface Preset {
     details: Partial<DetailedFields>;
     imageSize?: string;
     generationType?: 'text-to-image' | 'image-to-image';
-    apiProvider?: 'default' | 'puter' | 'bytez' | 'huggingface';
+    apiProvider?: 'default' | 'puter' | 'bytez' | 'huggingface' | 'google-ai';
     bytezModel?: string;
     huggingfaceModel?: string;
+    googleAIModel?: string;
     puterModel?: string;
     puterQuality?: string;
   };
@@ -133,7 +134,7 @@ function getDefaultPresets(): Preset[] {
   return [
     {
       id: 'default-1',
-      name: '🔥 Кликбейт миниатюра',
+      name: 'Кликбейт миниатюра',
       description: 'Драматичная миниатюра с шокированным лицом и ярким текстом',
       createdAt: new Date().toISOString(),
       config: {
@@ -151,7 +152,7 @@ function getDefaultPresets(): Preset[] {
     },
     {
       id: 'default-2',
-      name: '💰 Финансовая тема',
+      name: 'Финансовая тема',
       description: 'Миниатюра про деньги и заработок',
       createdAt: new Date().toISOString(),
       config: {
@@ -171,7 +172,7 @@ function getDefaultPresets(): Preset[] {
     },
     {
       id: 'default-3',
-      name: '🎮 Игровой стиль',
+      name: 'Игровой стиль',
       description: 'Яркая игровая миниатюра',
       createdAt: new Date().toISOString(),
       config: {
@@ -189,7 +190,7 @@ function getDefaultPresets(): Preset[] {
     },
     {
       id: 'default-4',
-      name: '📰 Новостной стиль',
+      name: 'Новостной стиль',
       description: 'Серьёзная миниатюра в стиле новостей',
       createdAt: new Date().toISOString(),
       config: {
@@ -207,7 +208,7 @@ function getDefaultPresets(): Preset[] {
     },
     {
       id: 'default-5',
-      name: '✨ Минималистичный',
+      name: 'Минималистичный',
       description: 'Чистый минималистичный дизайн',
       createdAt: new Date().toISOString(),
       config: {
@@ -224,7 +225,7 @@ function getDefaultPresets(): Preset[] {
     },
     {
       id: 'default-6',
-      name: '🔥 Провокационный/Вызывающий',
+      name: 'Провокационный/Вызывающий',
       description: 'Сексуальная привлекательная миниатюра с моделью в купальнике',
       createdAt: new Date().toISOString(),
       config: {
@@ -247,7 +248,7 @@ function getDefaultPresets(): Preset[] {
     },
     {
       id: 'default-7',
-      name: '🏍️ Погоня ДПС',
+      name: 'Погоня ДПС',
       description: 'Экстремальная погоня за питбайкерами от первого лица',
       createdAt: new Date().toISOString(),
       config: {
@@ -269,7 +270,7 @@ function getDefaultPresets(): Preset[] {
     },
     {
       id: 'default-8',
-      name: '🏍️ Эндуро Killstreet',
+      name: 'Эндуро Killstreet',
       description: 'Экшн погоня на эндуро мотоциклах, killstreet стиль, мотоспорт',
       createdAt: new Date().toISOString(),
       config: {

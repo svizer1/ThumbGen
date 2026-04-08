@@ -13,10 +13,13 @@ export function FavoriteModel() {
 
   // Get top 3 models
   const topModels = Object.entries(modelUsage)
+    .filter(([key]) => typeof modelUsage[key] === 'number')
     .sort(([, a], [, b]) => (b as number) - (a as number))
     .slice(0, 3);
 
-  const totalGenerations = Object.values(modelUsage).reduce((sum, count) => sum + (count as number), 0);
+  const totalGenerations = Object.values(modelUsage)
+    .filter((count) => typeof count === 'number')
+    .reduce((sum, count) => sum + (count as number), 0);
 
   const getModelDisplayName = (model: string) => {
     const parts = model.split('/');
@@ -26,7 +29,7 @@ export function FavoriteModel() {
   const getModelColor = (index: number) => {
     const colors = [
       'bg-amber-950/30 text-amber-300 border-amber-700/30',
-      'bg-gray-950/30 text-gray-300 border-gray-700/30',
+      'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-subtle)]',
       'bg-orange-950/30 text-orange-300 border-orange-700/30',
     ];
     return colors[index] || colors[2];
@@ -65,7 +68,7 @@ export function FavoriteModel() {
         <div className="bg-gradient-to-br from-[var(--accent-glow)] to-transparent border-2 border-[var(--accent)] rounded-xl p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center">
-              <Star className="w-5 h-5 text-white fill-white" />
+              <Star className="w-5 h-5 text-[var(--text-primary)] fill-white" />
             </div>
             <div className="flex-1">
               <p className="text-xs text-[var(--text-muted)] mb-0.5">Ваша любимая модель</p>

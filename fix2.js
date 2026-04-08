@@ -1,0 +1,12 @@
+const fs = require('fs');
+const file = 'src/lib/presets.ts';
+let content = fs.readFileSync(file, 'utf8');
+content = content.replace(/name: '🔥 Кликбейт миниатюра'/g, "name: 'Кликбейт миниатюра'");
+content = content.replace(/name: '💰 Финансовая тема'/g, "name: 'Финансовая тема'");
+content = content.replace(/name: '🎮 Игровой стиль'/g, "name: 'Игровой стиль'");
+content = content.replace(/name: '📰 Новостной стиль'/g, "name: 'Новостной стиль'");
+content = content.replace(/name: '✨ Минималистичный'/g, "name: 'Минималистичный'");
+content = content.replace(/name: '🔥 Провокационный\/Вызывающий'/g, "name: 'Провокационный/Вызывающий'");
+content = content.replace(/name: '🏍️ Погоня ДПС'/g, "name: 'Погоня ДПС'");
+content = content.replace(/name: '🏍️ Эндуро Killstreet'/g, "name: 'Эндуро Killstreet'");
+fs.writeFileSync(file, content);

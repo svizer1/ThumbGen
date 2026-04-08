@@ -18,20 +18,20 @@ export function ApiResult({ imageUrl, error, isLoading, onRegenerate }: ApiResul
  
    if (isLoading) { 
      return ( 
-       <div className="rounded-xl border border-[#252535] bg-[#0f0f1a] overflow-hidden animate-fade-in"> 
+       <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-base)] overflow-hidden animate-fade-in"> 
          {/* Skeleton */} 
-         <div className="aspect-video bg-[#141420] relative flex flex-col items-center justify-center gap-4"> 
+         <div className="aspect-video bg-[var(--bg-card)] relative flex flex-col items-center justify-center gap-4"> 
            <div className="relative"> 
-             <div className="w-12 h-12 rounded-xl bg-violet-600/20 flex items-center justify-center animate-pulse-glow"> 
-               <ImageIcon className="w-6 h-6 text-violet-400" /> 
+             <div className="w-12 h-12 rounded-xl bg-[var(--accent-glow)] flex items-center justify-center animate-pulse-glow"> 
+               <ImageIcon className="w-6 h-6 text-[var(--accent)]" /> 
              </div> 
            </div> 
            <div className="text-center space-y-1"> 
-             <p className="text-sm font-medium text-slate-300">Generating your thumbnail…</p> 
-             <p className="text-xs text-slate-600">This usually takes 2 – 5 seconds</p> 
+             <p className="text-sm font-medium text-[var(--text-secondary)]">Generating your thumbnail…</p> 
+             <p className="text-xs text-[var(--text-muted)]">This usually takes 2 – 5 seconds</p> 
            </div> 
            {/* Animated bar */} 
-           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-violet-500 to-transparent animate-pulse" /> 
+           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent animate-pulse" /> 
          </div> 
        </div> 
      ); 
@@ -84,7 +84,7 @@ export function ApiResult({ imageUrl, error, isLoading, onRegenerate }: ApiResul
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center pointer-events-none">
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Maximize2 className="w-8 h-8 text-white" />
+                  <Maximize2 className="w-8 h-8 text-[var(--text-primary)]" />
                 </div>
               </div>
             </>

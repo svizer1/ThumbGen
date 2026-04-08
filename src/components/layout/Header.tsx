@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Layers, Zap, History, Sun, Moon, Palette, DollarSign, LogIn } from 'lucide-react';
+import { Layers, Zap, History, Sun, Moon, Palette, DollarSign, LogIn, Sparkles, Wand2, ShoppingBag } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileButton } from '@/components/profile/ProfileButton';
@@ -30,7 +30,7 @@ export function Header({ onOpenLogin, onOpenSignup }: HeaderProps) {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-8 h-8 bg-[var(--accent)] rounded-lg flex items-center justify-center shadow-lg group-hover:opacity-90 transition-opacity">
-            <Layers className="w-4 h-4 text-white" />
+            <Layers className="w-4 h-4 text-[var(--text-primary)]" />
           </div>
           <span className="font-bold text-[var(--text-primary)] text-base tracking-tight">ThumbGen</span>
           <span className="hidden sm:inline-flex text-[10px] font-semibold text-[var(--accent)] bg-[var(--accent-glow)] border border-[var(--border-default)] px-1.5 py-0.5 rounded-full uppercase tracking-wider">
@@ -42,6 +42,28 @@ export function Header({ onOpenLogin, onOpenSignup }: HeaderProps) {
         <nav className="flex items-center gap-0.5">
           <NavLink href="/" active={pathname === '/'} icon={<Zap className="w-3.5 h-3.5" />}>
             Генератор
+          </NavLink>
+          <NavLink
+            href="/generator-v2"
+            active={pathname.startsWith('/generator-v2')}
+            icon={<Sparkles className="w-3.5 h-3.5" />}
+            badge="PRO"
+          >
+            Паки
+          </NavLink>
+          <NavLink
+            href="/enhance"
+            active={pathname.startsWith('/enhance')}
+            icon={<Wand2 className="w-3.5 h-3.5" />}
+          >
+            Улучшение
+          </NavLink>
+          <NavLink
+            href="/wildberries"
+            active={pathname.startsWith('/wildberries')}
+            icon={<ShoppingBag className="w-3.5 h-3.5" />}
+          >
+            WB Карточки
           </NavLink>
           <NavLink
             href="/history"
@@ -127,16 +149,18 @@ function NavLink({
   active,
   icon,
   children,
+  badge,
 }: {
   href: string;
   active: boolean;
   icon: React.ReactNode;
   children: React.ReactNode;
+  badge?: string;
 }) {
   return (
     <Link
       href={href}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative ${
         active
           ? 'bg-[var(--accent-glow)] text-[var(--accent)]'
           : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
@@ -144,6 +168,11 @@ function NavLink({
     >
       {icon}
       <span className="hidden sm:inline">{children}</span>
+      {badge && (
+        <span className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white text-[10px] font-bold rounded-full">
+          {badge}
+        </span>
+      )}
     </Link>
   );
 }

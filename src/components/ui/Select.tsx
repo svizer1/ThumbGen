@@ -18,7 +18,7 @@ import { SelectHTMLAttributes, forwardRef } from 'react';
          {label && ( 
            <label 
              htmlFor={selectId} 
-             className="text-xs font-medium text-slate-400 uppercase tracking-wider" 
+             className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider" 
            > 
              {label} 
            </label> 
@@ -27,9 +27,9 @@ import { SelectHTMLAttributes, forwardRef } from 'react';
            ref={ref} 
            id={selectId} 
            className={cn( 
-             'w-full rounded-lg px-3 py-2.5 text-sm text-slate-100', 
-             'bg-[#0f0f1a] border border-[#252535]', 
-             'focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30', 
+             'w-full rounded-lg px-3 py-2.5 text-sm text-[var(--text-primary)]',
+            'bg-[var(--bg-base)] border border-[var(--border-default)]',
+            'focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-glow)]', 
              'transition-colors duration-150', 
              'appearance-none cursor-pointer', 
              'disabled:opacity-50 disabled:cursor-not-allowed', 
@@ -45,18 +45,18 @@ import { SelectHTMLAttributes, forwardRef } from 'react';
            {...props} 
          > 
            {placeholder && ( 
-             <option value="" className="bg-[#0f0f1a] text-slate-500"> 
+             <option value="" className="bg-[var(--bg-base)] text-[var(--text-muted)]"> 
                {placeholder} 
              </option> 
            )} 
            {options.map((opt) => ( 
-             <option key={opt.value} value={opt.value} className="bg-[#0f0f1a]"> 
+             <option key={opt.value} value={opt.value} className="bg-[var(--bg-base)]"> 
                {opt.label} 
              </option> 
            ))} 
          </select> 
          {error && <p className="text-xs text-red-400">{error}</p>} 
-         {hint && !error && <p className="text-xs text-slate-600">{hint}</p>} 
+         {hint && !error && <p className="text-xs text-[var(--text-muted)]">{hint}</p>} 
        </div> 
      ); 
    } 

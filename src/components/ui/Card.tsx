@@ -11,10 +11,10 @@ export function Card({ className, padded = true, animated = false, hover = false
   return (
     <div
       className={cn(
-        'bg-[#141420] border border-[#252535] rounded-xl',
+        'bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl',
         'transition-all duration-300 ease-smooth',
         padded && 'p-5',
-        hover && 'hover:shadow-2xl hover:border-[#353545] hover:-translate-y-2 hover:scale-[1.03]',
+        hover && 'hover:shadow-2xl hover:border-[var(--border-strong)] hover:-translate-y-2 hover:scale-[1.03]',
         className
       )}
       style={{ willChange: hover ? 'transform' : 'auto' }}
@@ -44,7 +44,7 @@ export function CardTitle({
 }: HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn('text-sm font-semibold text-slate-200 uppercase tracking-wider', className)}
+      className={cn('text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider', className)}
       {...props}
     >
       {children}

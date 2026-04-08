@@ -14,9 +14,9 @@ const plans = [
     price: 0,
     period: '',
     icon: Zap,
-    color: 'text-gray-400',
-    bgColor: 'bg-gray-950/30',
-    borderColor: 'border-gray-700/30',
+    color: 'text-[var(--text-muted)]',
+    bgColor: 'bg-[var(--bg-elevated)]',
+    borderColor: 'border-[var(--border-subtle)]',
     features: [
       '10 генераций при регистрации',
       'Базовые модели',
@@ -33,10 +33,12 @@ const plans = [
     name: 'Starter',
     price: 5,
     period: '/месяц',
+    yearlyPrice: 48,
+    yearlyPeriod: '/год',
     icon: Sparkles,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-950/30',
-    borderColor: 'border-blue-700/30',
+    color: 'text-[var(--tag-blue-text)]',
+    bgColor: 'bg-[var(--tag-blue-bg)]',
+    borderColor: 'border-[var(--tag-blue-border)]',
     popular: false,
     features: [
       '200 генераций в месяц',
@@ -51,19 +53,25 @@ const plans = [
     name: 'Pro',
     price: 15,
     period: '/месяц',
+    yearlyPrice: 144,
+    yearlyPeriod: '/год',
     icon: Crown,
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-950/30',
-    borderColor: 'border-purple-700/30',
+    color: 'text-[var(--accent)]',
+    bgColor: 'bg-[var(--accent-glow)]',
+    borderColor: 'border-[var(--accent)]',
     popular: true,
     features: [
       '600 генераций в месяц',
       'Все модели + ранний доступ',
       'Без watermark',
       'История 90 дней',
-      'Приоритетная генерация',
+      'Генератор V2 с 15 паками примеров',
+      'Prompt Enhancer X2',
+      'Полное улучшение изображений',
+      'Wildberries генератор (базовый)',
+      'ThumbBot AI помощник',
       'API доступ',
-      'Расширенная аналитика',
+      'Приоритетная генерация',
     ],
   },
   {
@@ -71,15 +79,21 @@ const plans = [
     name: 'Unlimited',
     price: 30,
     period: '/месяц',
+    yearlyPrice: 288,
+    yearlyPeriod: '/год',
     icon: Infinity,
-    color: 'text-amber-400',
-    bgColor: 'bg-amber-950/30',
-    borderColor: 'border-amber-700/30',
+    color: 'text-[var(--tag-orange-text)]',
+    bgColor: 'bg-[var(--tag-orange-bg)]',
+    borderColor: 'border-[var(--tag-orange-border)]',
     features: [
-      '∞ Безлимитные генерации',
+      'Безлимитные генерации',
       'Все модели + эксклюзивные',
       'Без watermark',
       'Бессрочная история',
+      'Все функции Pro',
+      'Wildberries расширенный (инфографика)',
+      'ThumbBot с расширенным контекстом',
+      'Batch processing для улучшения',
       'Максимальный приоритет',
       'API доступ',
       'Персональная поддержка 24/7',
@@ -121,7 +135,8 @@ export default function PricingPage() {
     
     // Redirect to Telegram bot for payment
     const botUsername = 'ThumbGenAI_BOT';
-    const startParam = `subscribe_${planId}`;
+    const periodSuffix = billingPeriod === 'yearly' ? '_yearly' : '';
+    const startParam = `subscribe_${planId}${periodSuffix}`;
     window.open(`https://t.me/${botUsername}?start=${startParam}`, '_blank');
   };
 
@@ -141,13 +156,35 @@ export default function PricingPage() {
     <div className="min-h-screen py-12 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-16 animate-fadeIn">
+        <div className="text-center mb-12 animate-fadeIn">
           <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text-primary)] mb-4">
             <span className="gradient-text">Выберите свой план</span>
           </h1>
-          <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
+          <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto mb-8">
             Начните бесплатно или выберите план, который подходит именно вам
           </p>
+
+          <div className="flex items-center justify-center gap-4">
+            <span className={`text-sm font-medium ${billingPeriod === 'monthly' ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>
+              Ежемесячно
+            </span>
+            <button
+              onClick={() => setBillingPeriod(prev => prev === 'monthly' ? 'yearly' : 'monthly')}
+              className="relative inline-flex h-7 w-14 items-center rounded-full bg-[var(--bg-surface)] border border-[var(--border-default)] transition-colors focus:outline-none"
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-[var(--accent)] transition-transform duration-200 ease-in-out ${
+                  billingPeriod === 'yearly' ? 'translate-x-8' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-medium flex items-center gap-2 ${billingPeriod === 'yearly' ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>
+              Ежегодно
+              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-500 border border-emerald-500/20">
+                -20%
+              </span>
+            </span>
+          </div>
         </div>
 
         {/* Subscription Plans */}
@@ -155,29 +192,40 @@ export default function PricingPage() {
           {plans.map((plan, index) => {
             const Icon = plan.icon;
             const isCurrentPlan = userData?.subscription.plan === plan.id;
+            const price = billingPeriod === 'yearly' && plan.yearlyPrice ? plan.yearlyPrice : plan.price;
+            const period = billingPeriod === 'yearly' && plan.yearlyPeriod ? plan.yearlyPeriod : plan.period;
+            const monthlyEquivalent = billingPeriod === 'yearly' && plan.yearlyPrice ? Math.round(plan.yearlyPrice / 12) : null;
 
             return (
               <Card
                 key={plan.id}
-                className={`relative overflow-hidden animate-scaleIn stagger-${index + 1} group ${
-                  plan.popular ? 'ring-2 ring-[var(--accent)] scale-105' : ''
+                className={`relative overflow-hidden transition-all duration-300 animate-scaleIn stagger-${index + 1} group ${
+                  plan.popular ? 'ring-2 ring-[var(--accent)] shadow-[0_0_40px_rgba(168,85,247,0.15)] scale-105 z-10 border-[var(--accent)]/50' : 'hover:-translate-y-2 border-[var(--border-default)]'
                 }`}
                 hover={true}
               >
+                {/* Decorative background element */}
+                <div className={`absolute -right-20 -top-20 w-40 h-40 rounded-full blur-3xl opacity-20 transition-opacity duration-500 group-hover:opacity-40 ${
+                  plan.popular ? 'bg-[var(--accent)]' : 'bg-current text-[var(--text-muted)]'
+                }`} />
+
                 {plan.popular && (
-                  <div className="absolute top-0 right-0 bg-gradient-to-r from-[var(--accent)] to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg animate-pulse">
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500 via-[var(--accent)] to-pink-500" />
+                )}
+                {plan.popular && (
+                  <div className="absolute top-4 right-4 bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-bold px-3 py-1 rounded-full border border-[var(--accent)]/20 animate-pulse">
                     Популярный
                   </div>
                 )}
 
-                <div className="p-8">
+                <div className="p-8 h-full flex flex-col relative z-10">
                   {/* Icon & Name */}
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className={`w-12 h-12 rounded-xl ${plan.bgColor} border ${plan.borderColor} flex items-center justify-center transition-all duration-300 group-hover:scale-125 group-hover:rotate-12`}>
-                      <Icon className={`w-6 h-6 ${plan.color}`} />
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className={`p-3 rounded-2xl ${plan.bgColor} ${plan.color} ring-1 ring-inset ${plan.borderColor} shadow-sm`}>
+                      <Icon className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-[var(--text-primary)]">
+                      <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
                         {plan.name}
                       </h3>
                       {isCurrentPlan && (
@@ -191,11 +239,18 @@ export default function PricingPage() {
                   {/* Price */}
                   <div className="mb-8">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-[var(--text-primary)] transition-all duration-300 hover:scale-110">
-                        ${plan.price}
+                      <span className="text-5xl font-extrabold text-[var(--text-primary)] tracking-tighter transition-all duration-300 group-hover:scale-105 origin-left">
+                        ${price}
                       </span>
-                      <span className="text-[var(--text-muted)]">{plan.period}</span>
+                      <span className="text-[var(--text-muted)] font-medium">
+                        {period}
+                      </span>
                     </div>
+                    {monthlyEquivalent && (
+                      <p className="text-sm text-[var(--text-secondary)] mt-2 font-medium bg-[var(--bg-surface)] inline-block px-2 py-1 rounded-md border border-[var(--border-default)]">
+                        Всего ${monthlyEquivalent} / мес
+                      </p>
+                    )}
                   </div>
 
                   {/* Features */}

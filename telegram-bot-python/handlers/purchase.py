@@ -26,9 +26,12 @@ CREDIT_PACKAGES = [
 ]
 
 SUBSCRIPTION_PACKAGES = [
-    {'id': 'starter', 'name': 'Starter', 'price': 5, 'credits': 200},
-    {'id': 'pro', 'name': 'Pro', 'price': 15, 'credits': 600},
-    {'id': 'unlimited', 'name': 'Unlimited', 'price': 30, 'credits': -1},
+    {'id': 'starter', 'name': 'Starter', 'price': 5, 'credits': 200, 'period': 'month'},
+    {'id': 'pro', 'name': 'Pro', 'price': 15, 'credits': 600, 'period': 'month'},
+    {'id': 'unlimited', 'name': 'Unlimited', 'price': 30, 'credits': -1, 'period': 'month'},
+    {'id': 'starter_yearly', 'name': 'Starter (Год)', 'price': 50, 'credits': 2400, 'period': 'year'},
+    {'id': 'pro_yearly', 'name': 'Pro (Год)', 'price': 150, 'credits': 7200, 'period': 'year'},
+    {'id': 'unlimited_yearly', 'name': 'Unlimited (Год)', 'price': 300, 'credits': -1, 'period': 'year'},
 ]
 
 

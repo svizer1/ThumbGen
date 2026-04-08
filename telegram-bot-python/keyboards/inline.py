@@ -69,16 +69,19 @@ def credit_packages_keyboard() -> InlineKeyboardMarkup:
 def subscription_packages_keyboard(current_plan: str = 'free') -> InlineKeyboardMarkup:
     """Subscription packages keyboard"""
     packages = [
-        {'id': 'starter', 'name': 'Starter 🥉', 'price': 5, 'credits': 200},
-        {'id': 'pro', 'name': 'Pro ⭐', 'price': 15, 'credits': 600},
-        {'id': 'unlimited', 'name': 'Unlimited 🥇', 'price': 30, 'credits': -1},
+        {'id': 'starter', 'name': 'Starter 🥉', 'price': 5, 'credits': 200, 'period': 'мес'},
+        {'id': 'pro', 'name': 'Pro ⭐', 'price': 15, 'credits': 600, 'period': 'мес'},
+        {'id': 'unlimited', 'name': 'Unlimited 🥇', 'price': 30, 'credits': -1, 'period': 'мес'},
+        {'id': 'starter_yearly', 'name': 'Starter 🥉 (Год)', 'price': 50, 'credits': 2400, 'period': 'год'},
+        {'id': 'pro_yearly', 'name': 'Pro ⭐ (Год)', 'price': 150, 'credits': 7200, 'period': 'год'},
+        {'id': 'unlimited_yearly', 'name': 'Unlimited 🥇 (Год)', 'price': 300, 'credits': -1, 'period': 'год'},
     ]
     
     keyboard = []
     for pkg in packages:
         credits_text = "Безлимит" if pkg['credits'] == -1 else f"{pkg['credits']} кредитов"
         current = " (текущий)" if pkg['id'] == current_plan else ""
-        text = f"{pkg['name']} - ${pkg['price']}/мес\n{credits_text}{current}"
+        text = f"{pkg['name']} - ${pkg['price']}/{pkg['period']}\n{credits_text}{current}"
         keyboard.append([InlineKeyboardButton(text=text, callback_data=f"sub_{pkg['id']}", icon_custom_emoji_id="5884479287171485878")])
     
     keyboard.append([InlineKeyboardButton(text="Назад", callback_data="main_menu", icon_custom_emoji_id="5893057118545646106")])

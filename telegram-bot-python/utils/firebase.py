@@ -2,6 +2,7 @@
 Firebase operations for Telegram bot
 """
 import os
+import logging
 from datetime import datetime
 from typing import Optional, Dict, Any
 import firebase_admin
@@ -9,6 +10,8 @@ from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Initialize Firebase Admin
 cred_dict = {
@@ -36,170 +39,211 @@ db = firestore.client()
 
 def get_or_create_user(telegram_id: int, first_name: str, username: Optional[str]) -> Dict[str, Any]:
     """Get or create telegram user in Firestore"""
-    user_ref = db.collection('telegram_users').document(str(telegram_id))
-    user_doc = user_ref.get()
-    
-    if not user_doc.exists:
-        user_data = {
+    try:
+        user_ref = db.collection('telegram_users').document(str(telegram_id))
+        user_doc = user_ref.get()
+        
+        if not user_doc.exists:
+            user_data = {
+                'telegramId': telegram_id,
+                'username': username,
+                'firstName': first_name,
+                'language': 'ru',
+                'createdAt': datetime.now(),
+                'lastInteraction': datetime.now(),
+                'firebaseUid': None,
+            }
+            user_ref.set(user_data)
+            return user_data
+        else:
+            user_ref.update({'lastInteraction': datetime.now()})
+            return user_doc.to_dict()
+    except Exception as e:
+        logger.error(f"Firebase error in get_or_create_user: {e}")
+        return {
             'telegramId': telegram_id,
             'username': username,
             'firstName': first_name,
-            'language': 'ru',
-            'createdAt': datetime.now(),
-            'lastInteraction': datetime.now(),
-            'firebaseUid': None,
+            'firebaseUid': None
         }
-        user_ref.set(user_data)
-        return user_data
-    else:
-        user_ref.update({'lastInteraction': datetime.now()})
-        return user_doc.to_dict()
 
 
 def get_user_balance(telegram_id: int) -> int:
     """Get user's credit balance"""
-    user_ref = db.collection('telegram_users').document(str(telegram_id))
-    user_doc = user_ref.get()
-    
-    if not user_doc.exists:
+    try:
+        user_ref = db.collection('telegram_users').document(str(telegram_id))
+        user_doc = user_ref.get()
+        
+        if not user_doc.exists:
+            return 0
+        
+        firebase_uid = user_doc.to_dict().get('firebaseUid')
+        if not firebase_uid:
+            return 0
+        
+        firebase_user_ref = db.collection('users').document(firebase_uid)
+        firebase_user_doc = firebase_user_ref.get()
+        
+        if not firebase_user_doc.exists:
+            return 0
+        
+        return firebase_user_doc.to_dict().get('credits', 0)
+    except Exception as e:
+        logger.error(f"Firebase error in get_user_balance: {e}")
         return 0
-    
-    firebase_uid = user_doc.to_dict().get('firebaseUid')
-    if not firebase_uid:
-        return 0
-    
-    firebase_user_ref = db.collection('users').document(firebase_uid)
-    firebase_user_doc = firebase_user_ref.get()
-    
-    if not firebase_user_doc.exists:
-        return 0
-    
-    return firebase_user_doc.to_dict().get('credits', 0)
 
 
 def get_user_subscription(telegram_id: int) -> Optional[Dict[str, Any]]:
     """Get user's subscription info"""
-    user_ref = db.collection('telegram_users').document(str(telegram_id))
-    user_doc = user_ref.get()
-    
-    if not user_doc.exists:
+    try:
+        user_ref = db.collection('telegram_users').document(str(telegram_id))
+        user_doc = user_ref.get()
+        
+        if not user_doc.exists:
+            return None
+        
+        firebase_uid = user_doc.to_dict().get('firebaseUid')
+        if not firebase_uid:
+            return None
+        
+        firebase_user_ref = db.collection('users').document(firebase_uid)
+        firebase_user_doc = firebase_user_ref.get()
+        
+        if not firebase_user_doc.exists:
+            return None
+        
+        return firebase_user_doc.to_dict().get('subscription')
+    except Exception as e:
+        logger.error(f"Firebase error in get_user_subscription: {e}")
         return None
-    
-    firebase_uid = user_doc.to_dict().get('firebaseUid')
-    if not firebase_uid:
-        return None
-    
-    firebase_user_ref = db.collection('users').document(firebase_uid)
-    firebase_user_doc = firebase_user_ref.get()
-    
-    if not firebase_user_doc.exists:
-        return None
-    
-    return firebase_user_doc.to_dict().get('subscription')
 
 
 def is_account_linked(telegram_id: int) -> bool:
     """Check if Telegram account is linked to website"""
-    user_ref = db.collection('telegram_users').document(str(telegram_id))
-    user_doc = user_ref.get()
-    
-    if not user_doc.exists:
+    try:
+        user_ref = db.collection('telegram_users').document(str(telegram_id))
+        user_doc = user_ref.get()
+        
+        if not user_doc.exists:
+            return False
+        
+        firebase_uid = user_doc.to_dict().get('firebaseUid')
+        return firebase_uid is not None
+    except Exception as e:
+        logger.error(f"Firebase error in is_account_linked: {e}")
         return False
-    
-    firebase_uid = user_doc.to_dict().get('firebaseUid')
-    return firebase_uid is not None
 
 
 def link_account(telegram_id: int, link_token: str) -> bool:
     """Link Telegram account using token from website"""
-    # Get token from Firestore
-    token_ref = db.collection('link_tokens').document(link_token)
-    token_doc = token_ref.get()
-    
-    if not token_doc.exists:
-        return False
-    
-    token_data = token_doc.to_dict()
-    
-    # Check if already used
-    if token_data.get('used'):
-        return False
-    
-    # Check expiration
-    expires_at = token_data.get('expiresAt')
-    if expires_at:
-        # Convert Firestore timestamp to datetime if needed
-        if hasattr(expires_at, 'timestamp'):
-            expires_at = datetime.fromtimestamp(expires_at.timestamp())
-        # Make sure both datetimes are naive for comparison
-        if expires_at.tzinfo is not None:
-            expires_at = expires_at.replace(tzinfo=None)
-        if expires_at < datetime.now():
+    try:
+        # Get token from Firestore
+        token_ref = db.collection('link_tokens').document(link_token)
+        token_doc = token_ref.get()
+        
+        if not token_doc.exists:
             return False
-    
-    firebase_uid = token_data.get('userId')
-    
-    # Link accounts
-    telegram_user_ref = db.collection('telegram_users').document(str(telegram_id))
-    telegram_user_ref.set({
-        'firebaseUid': firebase_uid,
-        'linkedAt': datetime.now(),
-    }, merge=True)
-    
-    # Update website user
-    user_ref = db.collection('users').document(firebase_uid)
-    user_ref.update({
-        'telegramId': telegram_id,
-    })
-    
-    # Mark token as used
-    token_ref.update({'used': True})
-    
-    return True
+        
+        token_data = token_doc.to_dict()
+        
+        # Check if already used
+        if token_data.get('used'):
+            return False
+        
+        # Check expiration
+        expires_at = token_data.get('expiresAt')
+        if expires_at:
+            # Convert Firestore timestamp to datetime if needed
+            if hasattr(expires_at, 'timestamp'):
+                expires_at = datetime.fromtimestamp(expires_at.timestamp())
+            # Make sure both datetimes are naive for comparison
+            if expires_at.tzinfo is not None:
+                expires_at = expires_at.replace(tzinfo=None)
+            if expires_at < datetime.now():
+                return False
+        
+        firebase_uid = token_data.get('userId')
+        
+        # Link accounts
+        telegram_user_ref = db.collection('telegram_users').document(str(telegram_id))
+        telegram_user_ref.set({
+            'firebaseUid': firebase_uid,
+            'linkedAt': datetime.now(),
+        }, merge=True)
+        
+        # Update website user
+        user_ref = db.collection('users').document(firebase_uid)
+        user_ref.update({
+            'telegramId': telegram_id,
+        })
+        
+        # Mark token as used
+        token_ref.update({'used': True})
+        
+        return True
+    except Exception as e:
+        logger.error(f"Firebase error in link_account: {e}")
+        return False
 
 
 def get_all_users() -> list:
     """Get all telegram users"""
-    users_ref = db.collection('telegram_users')
-    docs = users_ref.stream()
-    return [doc.to_dict() for doc in docs]
+    try:
+        users_ref = db.collection('telegram_users')
+        docs = users_ref.stream()
+        return [doc.to_dict() for doc in docs]
+    except Exception as e:
+        logger.error(f"Firebase error in get_all_users: {e}")
+        return []
 
 
 def get_statistics() -> Dict[str, int]:
     """Get bot statistics"""
-    users = get_all_users()
-    total_users = len(users)
-    linked_users = sum(1 for u in users if u.get('firebaseUid'))
-    
-    return {
-        'total_users': total_users,
-        'linked_users': linked_users,
-        'unlinked_users': total_users - linked_users
-    }
+    try:
+        users = get_all_users()
+        total_users = len(users)
+        linked_users = sum(1 for u in users if u.get('firebaseUid'))
+        
+        return {
+            'total_users': total_users,
+            'linked_users': linked_users,
+            'unlinked_users': total_users - linked_users
+        }
+    except Exception as e:
+        logger.error(f"Firebase error in get_statistics: {e}")
+        return {
+            'total_users': 0,
+            'linked_users': 0,
+            'unlinked_users': 0
+        }
 
 
 def get_user_info(telegram_id: int) -> Optional[Dict[str, Any]]:
     """Get full user info including website data"""
-    telegram_user_ref = db.collection('telegram_users').document(str(telegram_id))
-    telegram_user_doc = telegram_user_ref.get()
-    
-    if not telegram_user_doc.exists:
-        return None
-    
-    telegram_data = telegram_user_doc.to_dict()
-    firebase_uid = telegram_data.get('firebaseUid')
-    
-    if not firebase_uid:
+    try:
+        telegram_user_ref = db.collection('telegram_users').document(str(telegram_id))
+        telegram_user_doc = telegram_user_ref.get()
+        
+        if not telegram_user_doc.exists:
+            return None
+        
+        telegram_data = telegram_user_doc.to_dict()
+        firebase_uid = telegram_data.get('firebaseUid')
+        
+        if not firebase_uid:
+            return telegram_data
+        
+        # Get website user data
+        user_ref = db.collection('users').document(firebase_uid)
+        user_doc = user_ref.get()
+        
+        if user_doc.exists:
+            website_data = user_doc.to_dict()
+            telegram_data['credits'] = website_data.get('credits', 0)
+            telegram_data['subscription'] = website_data.get('subscription')
+            telegram_data['totalGenerations'] = website_data.get('totalGenerations', 0)
+        
         return telegram_data
-    
-    # Get website user data
-    user_ref = db.collection('users').document(firebase_uid)
-    user_doc = user_ref.get()
-    
-    if user_doc.exists:
-        website_data = user_doc.to_dict()
-        telegram_data['credits'] = website_data.get('credits', 0)
-        telegram_data['subscription'] = website_data.get('subscription')
-        telegram_data['totalGenerations'] = website_data.get('totalGenerations', 0)
-    
-    return telegram_data
+    except Exception as e:
+        logger.error(f"Firebase error in get_user_info: {e}")
+        return None

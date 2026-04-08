@@ -13,14 +13,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    'bg-violet-600 text-white hover:bg-violet-500 active:bg-violet-700 shadow-lg shadow-violet-950/50 hover:shadow-xl hover:shadow-violet-950/60',
+    'bg-[var(--accent)] text-white hover:opacity-90 active:opacity-100 shadow-lg shadow-[var(--accent-glow)] hover:shadow-xl hover:shadow-[var(--accent-glow)]',
   secondary:
-    'bg-[#1a1a28] text-slate-200 hover:bg-[#222235] border border-[#252535] hover:border-[#353550]',
-  ghost: 'text-slate-400 hover:text-white hover:bg-white/5',
+    'bg-[var(--bg-surface)] text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] border border-[var(--border-default)] hover:border-[var(--border-strong)]',
+  ghost: 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]',
   danger:
     'bg-red-950/50 text-red-400 hover:bg-red-900/50 border border-red-800/40 hover:border-red-700/50',
   outline:
-    'border border-violet-500/50 text-violet-400 hover:bg-violet-600/10 hover:border-violet-400',
+    'border border-[var(--accent)]/50 text-[var(--accent)] hover:bg-[var(--accent-glow)] hover:border-[var(--accent)]',
 };
 
 const sizeClasses: Record<Size, string> = {
@@ -42,7 +42,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           'inline-flex items-center justify-center font-medium rounded-lg',
           'transition-all duration-200 ease-smooth',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080f]',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]',
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
           'select-none',
           'hover:scale-[1.02] active:scale-[0.98]',

@@ -76,6 +76,9 @@ def format_subscription_plan(plan: str) -> str:
         'free': 'Free',
         'starter': 'Starter 🥉',
         'pro': 'Pro ⭐',
-        'unlimited': 'Unlimited 🥇'
+        'unlimited': 'Unlimited 🥇',
+        'starter_yearly': 'Starter 🥉 (Год)',
+        'pro_yearly': 'Pro ⭐ (Год)',
+        'unlimited_yearly': 'Unlimited 🥇 (Год)'
     }
     return plans.get(plan, plan)

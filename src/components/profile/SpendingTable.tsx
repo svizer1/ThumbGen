@@ -15,9 +15,12 @@ interface SpendingTransaction {
   tokens: number;
   duration: number;
   spent: number;
-  currency: 'credits' | 'dollars';
+  currency: 'credits' | 'dollars' | 'crypto';
   requestId: string;
   status: 'success' | 'failed';
+  type?: string;
+  credits?: number;
+  subscriptionPlan?: string;
 }
 
 type SortField = 'timestamp' | 'model' | 'source' | 'duration' | 'spent';
@@ -30,6 +33,8 @@ export function SpendingTable() {
   const [sortField, setSortField] = useState<SortField>('timestamp');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [filterSource, setFilterSource] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!user) return;
@@ -45,14 +50,17 @@ export function SpendingTable() {
           return {
             id: doc.id,
             timestamp: docData.timestamp?.toDate() || new Date(),
-            model: docData.model || 'unknown',
-            source: docData.source || 'unknown',
+            model: docData.model || docData.type || 'unknown',
+            source: docData.source || 'system',
             tokens: docData.tokens || 0,
             duration: docData.duration || 0,
             spent: docData.spent || 0,
             currency: docData.currency || 'credits',
-            requestId: docData.requestId || doc.id,
+            requestId: docData.requestId || docData.transactionId || doc.id,
             status: docData.status || 'success',
+            type: docData.type,
+            credits: docData.credits,
+            subscriptionPlan: docData.subscriptionPlan,
           };
         });
 
@@ -132,6 +140,17 @@ export function SpendingTable() {
     ) : (
       <ChevronDown className="w-4 h-4 inline ml-1" />
     );
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (loading) {
@@ -218,7 +237,11 @@ export function SpendingTable() {
             </tr>
           </thead>
           <tbody className="bg-[var(--bg-card)] divide-y divide-[var(--border-subtle)]">
-            {filteredTransactions.map((transaction, index) => (
+            {paginatedTransactions.map((transaction, index) => {
+              const isPurchase = transaction.type === 'credit_purchase' || transaction.type === 'subscription_purchase';
+              const isSubscription = transaction.type === 'subscription_purchase';
+              
+              return (
               <tr 
                 key={transaction.id}
                 className={`hover:bg-[var(--bg-surface)] transition-all duration-300 hover:shadow-md animate-fadeIn stagger-${(index % 8) + 1}`}
@@ -234,42 +257,99 @@ export function SpendingTable() {
                   })}
                 </td>
                 <td className="px-6 py-4 text-sm text-[var(--text-primary)]">
-                  <span className="font-mono text-xs bg-[var(--bg-elevated)] px-2 py-1 rounded">
-                    {transaction.model.split('/').pop()}
-                  </span>
+                  {isPurchase ? (
+                    <span className="font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
+                      {isSubscription ? `Подписка ${transaction.subscriptionPlan}` : 'Пополнение'}
+                    </span>
+                  ) : (
+                    <span className="font-mono text-xs bg-[var(--bg-elevated)] px-2 py-1 rounded">
+                      {transaction.model.split('/').pop()}
+                    </span>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-sm text-[var(--text-primary)]">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    transaction.source === 'bytez' ? 'bg-orange-950/30 text-orange-300 border border-orange-700/30' :
-                    transaction.source === 'huggingface' ? 'bg-yellow-950/30 text-yellow-300 border border-yellow-700/30' :
-                    transaction.source === 'puter' ? 'bg-blue-950/30 text-blue-300 border border-blue-700/30' :
-                    'bg-gray-950/30 text-gray-300 border border-gray-700/30'
+                    isPurchase ? 'tag-green' :
+                    transaction.source === 'bytez' ? 'tag-orange' :
+                    transaction.source === 'huggingface' ? 'tag-yellow' :
+                    transaction.source === 'puter' ? 'tag-blue' :
+                    'tag-gray'
                   }`}>
-                    {transaction.source}
+                    {isPurchase ? 'Оплата' : transaction.source}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">
                   {transaction.tokens || '-'}
                 </td>
                 <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">
-                  {(transaction.duration / 1000).toFixed(2)}s
+                  {isPurchase ? '-' : `${(transaction.duration / 1000).toFixed(2)}s`}
                 </td>
                 <td className="px-6 py-4 text-sm font-semibold">
-                  <span className="text-[var(--accent)]">
-                    {transaction.spent} {transaction.spent === 1 ? 'кредит' : 'кредитов'}
-                  </span>
+                  {isPurchase ? (
+                    <span className="text-emerald-400">
+                      +{transaction.credits || 0} {transaction.credits === 1 ? 'кредит' : 'кредитов'}
+                    </span>
+                  ) : (
+                    <span className="text-[var(--accent)]">
+                      -{transaction.spent} {transaction.spent === 1 ? 'кредит' : 'кредитов'}
+                    </span>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-sm text-[var(--text-muted)] font-mono">
                   {transaction.requestId.slice(0, 8)}...
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6">
+          <p className="text-sm text-[var(--text-muted)]">
+            Показано от {(currentPage - 1) * itemsPerPage + 1} до {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} из {filteredTransactions.length} записей
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Назад
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => page === 1 || page === totalPages || Math.abs(currentPage - page) <= 1)
+                .map((page, i, arr) => (
+                  <div key={page} className="flex items-center">
+                    {i > 0 && arr[i - 1] !== page - 1 && <span className="px-2 text-[var(--text-muted)]">...</span>}
+                    <Button
+                      variant={currentPage === page ? 'primary' : 'outline'}
+                      size="sm"
+                      className={`w-8 h-8 p-0 ${currentPage === page ? 'bg-[var(--accent)] text-white' : ''}`}
+                      onClick={() => handlePageChange(page)}
+                    >
+                      {page}
+                    </Button>
+                  </div>
+                ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Вперед
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mt-8">
         <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-lg p-4 animate-scaleIn stagger-1 hover:border-[var(--border-strong)] transition-all duration-200">
           <p className="text-xs text-[var(--text-muted)] mb-1">Всего генераций</p>
           <p className="text-2xl font-bold text-[var(--text-primary)]">

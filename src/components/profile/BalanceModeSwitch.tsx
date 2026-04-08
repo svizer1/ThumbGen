@@ -27,7 +27,7 @@ export function BalanceModeSwitch() {
       <div className="p-6 rounded-lg border-2 border-[var(--accent)] bg-gradient-to-br from-[var(--accent-glow)] to-transparent">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-12 h-12 rounded-full bg-[var(--accent)] flex items-center justify-center">
-            <Coins className="w-6 h-6 text-white" />
+            <Coins className="w-6 h-6 text-[var(--text-primary)]" />
           </div>
           <div>
             <p className="text-sm text-[var(--text-muted)]">Доступно кредитов</p>

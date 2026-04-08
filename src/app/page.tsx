@@ -69,7 +69,7 @@ export default function HomePage() {
               <div className="text-center">
                 {/* Icon */}
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--accent)] to-purple-600 flex items-center justify-center mx-auto mb-6 shadow-lg animate-float">
-                  <Lock className="w-10 h-10 text-white" />
+                  <Lock className="w-10 h-10 text-[var(--text-primary)]" />
                 </div>
 
                 {/* Title */}

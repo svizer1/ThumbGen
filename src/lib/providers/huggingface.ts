@@ -64,6 +64,9 @@ export class HuggingFaceProvider implements ImageProvider {
           parameters: {
             prompt: request.prompt,
             negative_prompt: request.negativePrompt,
+            strength: 0.75, // Насколько сильно изменять исходное изображение (0.0-1.0)
+            guidance_scale: 7.5, // Насколько строго следовать промпту
+            num_inference_steps: 50, // Количество шагов генерации
           } as any,
         });
         blob = result as Blob;
@@ -105,77 +108,45 @@ export class HuggingFaceProvider implements ImageProvider {
 }
 
 // Доступные модели Hugging Face
-// ВАЖНО: Большинство моделей HF не поддерживают image-to-image через Inference API
-// Для image-to-image используйте Bytez провайдер
+// ВАЖНО: В 2026 году Hugging Face изменил политику Inference API
+// Большинство моделей требуют платные кредиты через провайдера fal-ai
+// Используйте Google AI Studio или Bytez для бесплатной генерации
+// Эти модели могут не работать без предоплаченных кредитов
 export const HUGGINGFACE_MODELS = [
   { 
-    value: 'black-forest-labs/FLUX.1-dev', 
-    label: 'FLUX.1 Dev (Лучший для текста) ⭐',
-    supportsImageToImage: false,
-  },
-  { 
-    value: 'black-forest-labs/FLUX.1-schnell', 
-    label: 'FLUX.1 Schnell (Быстрый)',
-    supportsImageToImage: false,
-  },
-  { 
     value: 'stabilityai/stable-diffusion-xl-base-1.0', 
-    label: 'Stable Diffusion XL 1.0',
+    label: 'Stable Diffusion XL 1.0 ⚠️',
     supportsImageToImage: false,
-  },
-  { 
-    value: 'stabilityai/stable-diffusion-3.5-large', 
-    label: 'Stable Diffusion 3.5 Large',
-    supportsImageToImage: false,
-  },
-  { 
-    value: 'stabilityai/stable-diffusion-3.5-medium', 
-    label: 'Stable Diffusion 3.5 Medium',
-    supportsImageToImage: false,
+    warning: 'Может требовать платные кредиты',
   },
   { 
     value: 'stabilityai/stable-diffusion-2-1', 
-    label: 'Stable Diffusion 2.1',
+    label: 'Stable Diffusion 2.1 ⚠️',
     supportsImageToImage: false,
+    warning: 'Может требовать платные кредиты',
   },
   { 
     value: 'runwayml/stable-diffusion-v1-5', 
-    label: 'Stable Diffusion 1.5',
+    label: 'Stable Diffusion 1.5 ⚠️',
     supportsImageToImage: false,
+    warning: 'Может требовать платные кредиты',
   },
   { 
     value: 'prompthero/openjourney', 
-    label: 'OpenJourney (Midjourney style)',
+    label: 'OpenJourney (Midjourney style) ⚠️',
     supportsImageToImage: false,
+    warning: 'Может требовать платные кредиты',
   },
   { 
     value: 'SG161222/Realistic_Vision_V5.1_noVAE', 
-    label: 'Realistic Vision 5.1',
+    label: 'Realistic Vision 5.1 ⚠️',
     supportsImageToImage: false,
+    warning: 'Может требовать платные кредиты',
   },
   { 
     value: 'dreamlike-art/dreamlike-photoreal-2.0', 
-    label: 'Dreamlike Photoreal 2.0',
+    label: 'Dreamlike Photoreal 2.0 ⚠️',
     supportsImageToImage: false,
-  },
-  { 
-    value: 'HeartandSoul/Michaela', 
-    label: 'Michaela (Портреты)',
-    supportsImageToImage: false,
-  },
-  { 
-    value: 'kpsss34/FHDR', 
-    label: 'FHDR (Высокое разрешение)',
-    supportsImageToImage: false,
-  },
-  { 
-    value: 'UncensoredTongyi-MAI/Z-Image-Turbo', 
-    label: 'Z-Image Turbo (Быстрый)',
-    supportsImageToImage: false,
-  },
-  { 
-    value: 'Qwen/Qwen-Image-2512', 
-    label: 'Qwen Image',
-    supportsImageToImage: false,
+    warning: 'Может требовать платные кредиты',
   },
 ];

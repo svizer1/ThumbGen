@@ -16,7 +16,7 @@ import { TextareaHTMLAttributes, forwardRef } from 'react';
          {label && ( 
            <label 
              htmlFor={textareaId} 
-             className="text-xs font-medium text-slate-400 uppercase tracking-wider" 
+             className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider" 
            > 
              {label} 
            </label> 
@@ -25,9 +25,9 @@ import { TextareaHTMLAttributes, forwardRef } from 'react';
            ref={ref} 
            id={textareaId} 
            className={cn( 
-             'w-full rounded-lg px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600', 
-             'bg-[#0f0f1a] border border-[#252535]', 
-             'focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30', 
+             'w-full rounded-lg px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]', 
+             'bg-[var(--bg-base)] border border-[var(--border-default)]', 
+             'focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-glow)]', 
              'transition-colors duration-150', 
              'resize-y min-h-[100px]', 
              'disabled:opacity-50 disabled:cursor-not-allowed', 
@@ -37,7 +37,7 @@ import { TextareaHTMLAttributes, forwardRef } from 'react';
            {...props} 
          /> 
          {error && <p className="text-xs text-red-400">{error}</p>} 
-         {hint && !error && <p className="text-xs text-slate-600">{hint}</p>} 
+         {hint && !error && <p className="text-xs text-[var(--text-muted)]">{hint}</p>} 
        </div> 
      ); 
    } 

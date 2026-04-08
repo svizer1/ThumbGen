@@ -20,14 +20,6 @@ export function Footer() {
             </p>
             <div className="flex gap-3">
               <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all duration-200 hover:scale-110"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-              <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -92,24 +84,12 @@ export function Footer() {
             </h4>
             <ul className="space-y-3">
               <li>
-                <a
-                  href="https://github.com/svizer1/ThumbGen"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
-                >
-                  GitHub
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://docs.google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/docs"
                   className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"
                 >
                   Документация
-                </a>
+                </Link>
               </li>
               <li>
                 <a

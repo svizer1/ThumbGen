@@ -35,7 +35,7 @@ export function ImageModal({ imageUrl, onClose }: ImageModalProps) {
           e.stopPropagation();
           onClose();
         }}
-        className="absolute top-4 right-4 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors z-[10000]"
+        className="absolute top-4 right-4 p-2 rounded-lg bg-[var(--bg-elevated)] hover:bg-white/20 text-[var(--text-primary)] transition-colors z-[10000]"
         title="Закрыть (Esc)"
       >
         <X className="w-6 h-6" />

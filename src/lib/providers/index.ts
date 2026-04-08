@@ -4,6 +4,7 @@ import { MockProvider } from './mock';
 export { BytezProvider, BYTEZ_MODELS } from './bytez';
 export { HuggingFaceProvider, HUGGINGFACE_MODELS } from './huggingface';
 export { PuterProvider, PUTER_MODELS, PUTER_QUALITY_OPTIONS } from './puter';
+export { GoogleAIProvider, GOOGLE_AI_MODELS } from './google-ai';
 
 export function getProvider(): ImageProvider {
   const providerName = (process.env.IMAGE_PROVIDER ?? 'mock').toLowerCase();

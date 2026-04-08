@@ -78,10 +78,10 @@
      <>
        {showModal && imageUrl && <ImageModal imageUrl={imageUrl} onClose={() => setShowModal(false)} />}
        
-       <div className="bg-[#141420] border border-[#252535] rounded-xl overflow-hidden card-hover flex flex-col"> 
+       <div className="bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl overflow-hidden card-hover flex flex-col"> 
          {/* Image or placeholder */} 
          <div 
-           className={`aspect-video bg-[#0f0f1a] relative overflow-hidden ${imageUrl ? 'cursor-pointer group' : ''}`}
+           className={`aspect-video bg-[var(--bg-base)] relative overflow-hidden ${imageUrl ? 'cursor-pointer group' : ''}`}
            onClick={() => imageUrl && setShowModal(true)}
          > 
            {imageUrl ? (
@@ -95,34 +95,38 @@
                />
                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                   <Maximize2 className="w-8 h-8 text-white" />
+                   <Maximize2 className="w-8 h-8 text-[var(--text-primary)]" />
                  </div>
                </div>
              </>
            ) : ( 
              <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#0f0f1a] to-[#1a1027]"> 
-               <Wand2 className="w-8 h-8 text-violet-500/40" /> 
-               <span className="text-xs text-slate-600">Prompt mode — no image</span> 
+               <Wand2 className="w-8 h-8 text-[var(--accent)]/40" /> 
+               <span className="text-xs text-[var(--text-muted)]">Prompt mode — no image</span> 
              </div> 
             )} 
  
             {/* Mode badge */} 
-            <div className="absolute top-2.5 left-2.5"> 
-              <span 
-                className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-1 rounded-full ${
-                  isPromptMode 
-                    ? 'bg-violet-600/80 text-violet-100' 
-                    : 'bg-emerald-700/80 text-emerald-100' 
-                } backdrop-blur-sm`} 
-              > 
-                {isPromptMode ? ( 
-                  <Wand2 className="w-3 h-3" /> 
-                ) : ( 
-                  <ImageIcon className="w-3 h-3" /> 
-                )} 
-                {isPromptMode ? 'Prompt' : 'API'} 
-              </span> 
-            </div> 
+           <div className="absolute top-2.5 left-2.5"> 
+             <span 
+               className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-1 rounded-full ${
+                 isPromptMode 
+                   ? 'bg-[var(--accent)] text-white' 
+                   : entry.mode === 'wildberries'
+                     ? 'bg-fuchsia-600/80 text-fuchsia-100'
+                     : 'bg-emerald-700/80 text-emerald-100' 
+               } backdrop-blur-sm`} 
+             > 
+               {isPromptMode ? ( 
+                 <Wand2 className="w-3 h-3" /> 
+               ) : entry.mode === 'wildberries' ? (
+                 <span className="font-bold tracking-wider">WB</span>
+               ) : ( 
+                 <ImageIcon className="w-3 h-3" /> 
+               )} 
+               {isPromptMode ? 'Prompt' : entry.mode === 'wildberries' ? 'Wildberries' : 'API'} 
+             </span> 
+           </div> 
  
             {/* Status badge */} 
             {entry.status === 'error' && ( 
@@ -137,49 +141,57 @@
           {/* Body */} 
           <div className="p-4 flex flex-col gap-3 flex-1"> 
             {/* Date */} 
-            <div className="flex items-center gap-1.5 text-xs text-slate-600"> 
+            <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]"> 
               <Clock className="w-3 h-3" /> 
               {formatDate(entry.createdAt)} 
             </div> 
  
             {/* General description summary */} 
             {entry.input.generalDescription && ( 
-              <p className="text-sm text-slate-300 leading-relaxed"> 
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed"> 
                 {truncate(entry.input.generalDescription, 120)} 
               </p> 
             )} 
+            {entry.mode === 'wildberries' && entry.input.product?.productName && (
+              <div className="space-y-1">
+                <h3 className="font-semibold text-[var(--text-primary)]">{entry.input.product.productName}</h3>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  {truncate(entry.input.product.description || '', 80)}
+                </p>
+              </div>
+            )}
  
             {/* Tags */} 
             <div className="flex flex-wrap gap-1.5"> 
-              {entry.input.details.emotion && ( 
-                <Tag>{entry.input.details.emotion}</Tag> 
-              )} 
-              {entry.input.details.style && ( 
-                <Tag>{entry.input.details.style}</Tag> 
-              )} 
-              {entry.input.details.composition && ( 
-                <Tag>{entry.input.details.composition}</Tag> 
-              )} 
-              {entry.input.sourceImageUrls.length > 0 && ( 
-                <Tag>{entry.input.sourceImageUrls.length} source img</Tag> 
-              )} 
-              {entry.input.referenceImageUrl && ( 
-                <Tag>Reference style</Tag> 
-              )} 
+              {entry.mode === 'wildberries' ? (
+                <>
+                  <Tag>{entry.input.product?.category}</Tag>
+                  {entry.input.options?.includeInfographic && <Tag>Инфографика</Tag>}
+                  {entry.input.options?.includeMultipleAngles && <Tag>Ракурсы</Tag>}
+                </>
+              ) : (
+                <>
+                  {entry.input.details?.emotion && <Tag>{entry.input.details.emotion}</Tag>}
+                  {entry.input.details?.style && <Tag>{entry.input.details.style}</Tag>}
+                  {entry.input.details?.composition && <Tag>{entry.input.details.composition}</Tag>}
+                  {entry.input.sourceImageUrls?.length > 0 && <Tag>{entry.input.sourceImageUrls.length} source img</Tag>}
+                  {entry.input.referenceImageUrl && <Tag>Reference style</Tag>}
+                </>
+              )}
             </div> 
  
             {/* Prompt preview */} 
             {prompt && ( 
               <div className="mt-auto"> 
-                <div className="rounded-lg border border-[#1e1e2e] bg-[#0c0c17] overflow-hidden"> 
+                <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] overflow-hidden"> 
                   <div className="flex items-center justify-between px-3 py-2"> 
-                    <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider"> 
+                    <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider"> 
                       Prompt 
                     </span> 
                     <button 
                       type="button" 
                       onClick={() => setExpanded(!expanded)} 
-                      className="text-slate-600 hover:text-slate-400 transition-colors" 
+                      className="text-[var(--text-muted)] hover:text-[var(--text-muted)] transition-colors" 
                     > 
                       {expanded ? ( 
                         <ChevronUp className="w-3.5 h-3.5" /> 
@@ -190,7 +202,7 @@
                   </div> 
                   <div className="px-3 pb-3"> 
                     <p 
-                      className={`text-xs text-slate-500 font-mono leading-relaxed transition-all ${
+                      className={`text-xs text-[var(--text-muted)] font-mono leading-relaxed transition-all ${
                         expanded ? '' : 'line-clamp-2' 
                       }`} 
                     > 
@@ -202,7 +214,7 @@
             )} 
  
             {/* Actions */} 
-            <div className="flex items-center gap-2 pt-1 border-t border-[#1e1e2e] mt-1"> 
+            <div className="flex items-center gap-2 pt-1 border-t border-[var(--border-subtle)] mt-1"> 
               {imageUrl && (
                 <>
                   <Button variant="ghost" size="xs" onClick={() => setShowModal(true)} className="flex-1 justify-center">
@@ -248,7 +260,7 @@
  
  function Tag({ children }: { children: React.ReactNode }) { 
    return ( 
-     <span className="inline-flex text-[10px] font-medium text-slate-500 bg-[#1a1a28] border border-[#252535] px-1.5 py-0.5 rounded-full capitalize"> 
+     <span className="inline-flex text-[10px] font-medium text-[var(--text-muted)] bg-[var(--bg-surface)] border border-[var(--border-default)] px-1.5 py-0.5 rounded-full capitalize"> 
        {children} 
      </span> 
    ); 

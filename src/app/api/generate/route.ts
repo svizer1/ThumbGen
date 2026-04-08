@@ -6,12 +6,29 @@ import { getProvider } from '@/lib/providers';
 import { PuterProvider } from '@/lib/providers/puter';
 import { BytezProvider } from '@/lib/providers/bytez';
 import { HuggingFaceProvider } from '@/lib/providers/huggingface';
+import { GoogleAIProvider } from '@/lib/providers/google-ai';
 import type { GenerationInput, HistoryEntry, GenerateApiResponse } from '@/types';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
   console.log('[generate] === API CALLED ===');
+
+  // Simple Rate Limiting (10 requests per minute max)
+  const { success, isBot, headers } = checkRateLimit(request, 10, 60000);
+  if (!success) {
+    if (isBot) {
+      return NextResponse.json(
+        { error: 'bot_detected', message: 'Подозрительная активность. Пройдите капчу.' }, 
+        { status: 429, headers }
+      );
+    }
+    return NextResponse.json(
+      { error: 'rate_limit_exceeded', message: 'Слишком много запросов. Подождите немного.' }, 
+      { status: 429, headers }
+    );
+  }
   
   let body: any;
 
@@ -80,7 +97,7 @@ export async function POST(request: NextRequest) {
   let generatedImageUrl: string | undefined;
   let status: 'success' | 'error' = 'success';
   let error: string | undefined;
-  let modelUsed = body.bytezModel || body.huggingfaceModel || body.puterModel || 'default';
+  let modelUsed = body.googleAIModel || body.bytezModel || body.huggingfaceModel || body.puterModel || 'default';
   let providerUsed = body.apiProvider || 'default';
 
   if (body.mode === 'api') {
@@ -110,11 +127,21 @@ export async function POST(request: NextRequest) {
         if (!apiKey) {
           throw new Error('HUGGINGFACE_API_KEY not configured in .env.local');
         }
-        const model = body.huggingfaceModel || 'black-forest-labs/FLUX.1-dev';
+        const model = body.huggingfaceModel || 'stabilityai/stable-diffusion-xl-base-1.0';
         provider = new HuggingFaceProvider(apiKey, model);
         modelUsed = model;
         providerUsed = 'huggingface';
         console.log(`[generate] Using Hugging Face provider with model: ${model}`);
+      } else if (body.apiProvider === 'google-ai') {
+        const apiKey = process.env.GOOGLE_AI_API_KEY;
+        if (!apiKey) {
+          throw new Error('GOOGLE_AI_API_KEY not configured in .env.local');
+        }
+        const model = body.googleAIModel || 'gemini-3.1-flash-image-preview';
+        provider = new GoogleAIProvider(apiKey, model);
+        modelUsed = model;
+        providerUsed = 'google-ai';
+        console.log(`[generate] Using Google AI provider with model: ${model}`);
       } else {
         provider = getProvider();
         console.log(`[generate] Using provider: ${provider.name}`);
@@ -143,6 +170,7 @@ export async function POST(request: NextRequest) {
         width,
         height,
         generationType: body.generationType || 'text-to-image',
+        strength: body.strength || 0.75,
       });
       generatedImageUrl = result.imageUrl;
       console.log(`[generate] Image generated in ${result.timingMs}ms`);

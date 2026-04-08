@@ -89,26 +89,26 @@
            'relative flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed', 
            'cursor-pointer transition-all duration-200 text-center', 
            dragging 
-             ? 'border-violet-500 bg-violet-500/8' 
-             : 'border-[#252535] bg-[#0f0f1a] hover:border-[#353550] hover:bg-[#141420]', 
+             ? 'border-[var(--accent)] bg-[var(--accent-glow)]' 
+             : 'border-[var(--border-default)] bg-[var(--bg-base)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-card)]', 
            files.length >= MAX_FILES && 'opacity-50 pointer-events-none' 
          )} 
        > 
          <div 
            className={cn( 
              'w-12 h-12 rounded-xl flex items-center justify-center transition-colors', 
-             dragging ? 'bg-violet-600/20 text-violet-400' : 'bg-[#1a1a28] text-slate-500' 
+             dragging ? 'bg-[var(--accent-glow)] text-[var(--accent)]' : 'bg-[var(--bg-surface)] text-[var(--text-muted)]' 
            )} 
          > 
            <Upload className="w-5 h-5" /> 
          </div> 
  
          <div> 
-           <p className="text-sm font-medium text-slate-300"> 
+           <p className="text-sm font-medium text-[var(--text-secondary)]"> 
              Drop images here or{' '} 
-             <span className="text-violet-400 underline underline-offset-2">browse</span> 
+             <span className="text-[var(--accent)] underline underline-offset-2">browse</span> 
            </p> 
-           <p className="text-xs text-slate-600 mt-1"> 
+           <p className="text-xs text-[var(--text-muted)] mt-1"> 
              JPEG, PNG, WebP, GIF, AVIF · Up to {MAX_SIZE_MB} MB · Max {MAX_FILES}  files 
            </p> 
          </div> 
@@ -137,7 +137,7 @@
            {files.map((file, i) => ( 
              <div 
                key={i} 
-               className="relative group aspect-video rounded-lg overflow-hidden border border-[#252535] bg-[#0f0f1a] img-checkerboard" 
+               className="relative group aspect-video rounded-lg overflow-hidden border border-[var(--border-default)] bg-[var(--bg-base)] img-checkerboard" 
              > 
                {/* eslint-disable-next-line @next/next/no-img-element */} 
                <img 
@@ -154,11 +154,11 @@
                    }} 
                    className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors" 
                  > 
-                   <X className="w-3.5 h-3.5 text-white" /> 
+                   <X className="w-3.5 h-3.5 text-[var(--text-primary)]" /> 
                  </button> 
                </div> 
                <div className="absolute bottom-1 left-1 right-1"> 
-                 <p className="text-[9px] text-white/70 truncate bg-black/60 px-1.5 py-0.5 rounded"> 
+                 <p className="text-[9px] text-[var(--text-primary)]/70 truncate bg-black/60 px-1.5 py-0.5 rounded"> 
                    {file.name} 
                  </p> 
                </div> 
@@ -170,10 +170,10 @@
              <button 
                type="button" 
                onClick={() => inputRef.current?.click()} 
-               className="aspect-video rounded-lg border-2 border-dashed border-[#252535] bg-[#0f0f1a] hover:border-violet-500/40 hover:bg-violet-500/5 flex flex-col items-center justify-center gap-1 transition-all" 
+               className="aspect-video rounded-lg border-2 border-dashed border-[var(--border-default)] bg-[var(--bg-base)] hover:border-[var(--accent)]/40 hover:bg-[var(--accent-glow)] flex flex-col items-center justify-center gap-1 transition-all" 
              > 
-               <ImageIcon className="w-4 h-4 text-slate-600" /> 
-               <span className="text-[10px] text-slate-600">Add more</span> 
+               <ImageIcon className="w-4 h-4 text-[var(--text-muted)]" /> 
+               <span className="text-[10px] text-[var(--text-muted)]">Add more</span> 
              </button> 
            )} 
          </div> 

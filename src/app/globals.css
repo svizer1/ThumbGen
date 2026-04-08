@@ -4,64 +4,103 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* Молочная тема (светлая) */
+/* Светлая тема (Milk / Cream) - Чистая, современная, контрастная */
 [data-theme="cream"] {
-  --bg-base: #FAF6F0;
-  --bg-surface: #F5EFE6;
+  --bg-base: #FAFAFA;
+  --bg-surface: #F3F4F6;
   --bg-card: #FFFFFF;
-  --bg-elevated: #E5D9CA;
-  --border-subtle: #E8DCC8;
-  --border-default: #D4C5AA;
-  --border-strong: #A89678;
-  --accent: #8B6F47;
-  --accent-hover: #6B5537;
-  --accent-glow: rgba(139, 111, 71, 0.15);
-  --text-primary: #2C1810;
-  --text-secondary: #4A3426;
-  --text-muted: #6B5744;
-  --success: #10b981;
-  --error: #ef4444;
-  --warning: #f59e0b;
+  --bg-elevated: #FFFFFF;
+  --border-subtle: #E5E7EB;
+  --border-default: #D1D5DB;
+  --border-strong: #9CA3AF;
+  --accent: #8B5A2B;
+  --accent-hover: #6B4226;
+  --accent-glow: rgba(139, 90, 43, 0.15);
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #6B7280;
+  --success: #10B981;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  
+  --tag-orange-bg: rgba(249, 115, 22, 0.1);
+  --tag-orange-text: #C2410C;
+  --tag-orange-border: rgba(249, 115, 22, 0.2);
+  --tag-yellow-bg: rgba(234, 179, 8, 0.1);
+  --tag-yellow-text: #A16207;
+  --tag-yellow-border: rgba(234, 179, 8, 0.2);
+  --tag-blue-bg: rgba(59, 130, 246, 0.1);
+  --tag-blue-text: #1D4ED8;
+  --tag-blue-border: rgba(59, 130, 246, 0.2);
+  --tag-gray-bg: rgba(107, 114, 128, 0.1);
+  --tag-gray-text: #4B5563;
+  --tag-gray-border: rgba(107, 114, 128, 0.2);
 }
 
-/* Коричнево-молочная тема (теплая) */
+/* Коричневая тема (Coffee / Dark Chocolate) - Глубокая, премиальная, теплые темные тона со светлым текстом */
 [data-theme="brown-cream"] {
-  --bg-base: #E8DCC8;
-  --bg-surface: #D4C5AA;
-  --bg-card: #F5EFE6;
-  --bg-elevated: #B8A68A;
-  --border-subtle: #C4B59A;
-  --border-default: #A89678;
-  --border-strong: #8B7355;
-  --accent: #5D4037;
-  --accent-hover: #4A3226;
-  --accent-glow: rgba(93, 64, 55, 0.2);
-  --text-primary: #1A0F08;
-  --text-secondary: #2C1810;
-  --text-muted: #4A3426;
-  --success: #10b981;
-  --error: #ef4444;
-  --warning: #f59e0b;
+  --bg-base: #1C1917;
+  --bg-surface: #292524;
+  --bg-card: #292524;
+  --bg-elevated: #44403C;
+  --border-subtle: #44403C;
+  --border-default: #57534E;
+  --border-strong: #78716C;
+  --accent: #D97706;
+  --accent-hover: #F59E0B;
+  --accent-glow: rgba(217, 119, 6, 0.25);
+  --text-primary: #FAF6F0;
+  --text-secondary: #E7E5E4;
+  --text-muted: #A8A29E;
+  --success: #10B981;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  
+  --tag-orange-bg: rgba(249, 115, 22, 0.15);
+  --tag-orange-text: #FDBA74;
+  --tag-orange-border: rgba(249, 115, 22, 0.3);
+  --tag-yellow-bg: rgba(234, 179, 8, 0.15);
+  --tag-yellow-text: #FDE047;
+  --tag-yellow-border: rgba(234, 179, 8, 0.3);
+  --tag-blue-bg: rgba(59, 130, 246, 0.15);
+  --tag-blue-text: #93C5FD;
+  --tag-blue-border: rgba(59, 130, 246, 0.3);
+  --tag-gray-bg: rgba(156, 163, 175, 0.15);
+  --tag-gray-text: #D1D5DB;
+  --tag-gray-border: rgba(156, 163, 175, 0.3);
 }
 
-/* Темная тема */
+/* Темная тема (Midnight / Slate) - Современная, стильная, контрастная */
 [data-theme="dark"] {
-  --bg-base: #0A0A0F;
-  --bg-surface: #12121A;
-  --bg-card: #1A1A24;
-  --bg-elevated: #22222E;
-  --border-subtle: #2A2A38;
-  --border-default: #353545;
-  --border-strong: #454555;
-  --accent: #8B5CF6;
-  --accent-hover: #7C3AED;
-  --accent-glow: rgba(139, 92, 246, 0.25);
-  --text-primary: #F1F5F9;
+  --bg-base: #0F1115;
+  --bg-surface: #181A20;
+  --bg-card: #181A20;
+  --bg-elevated: #262932;
+  --border-subtle: #262932;
+  --border-default: #333842;
+  --border-strong: #4B5563;
+  --accent: #6366F1;
+  --accent-hover: #818CF8;
+  --accent-glow: rgba(99, 102, 241, 0.25);
+  --text-primary: #F8FAFC;
   --text-secondary: #CBD5E1;
   --text-muted: #94A3B8;
-  --success: #10b981;
-  --error: #ef4444;
-  --warning: #f59e0b;
+  --success: #10B981;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  
+  --tag-orange-bg: rgba(249, 115, 22, 0.15);
+  --tag-orange-text: #FDBA74;
+  --tag-orange-border: rgba(249, 115, 22, 0.3);
+  --tag-yellow-bg: rgba(234, 179, 8, 0.15);
+  --tag-yellow-text: #FDE047;
+  --tag-yellow-border: rgba(234, 179, 8, 0.3);
+  --tag-blue-bg: rgba(59, 130, 246, 0.15);
+  --tag-blue-text: #93C5FD;
+  --tag-blue-border: rgba(59, 130, 246, 0.3);
+  --tag-gray-bg: rgba(156, 163, 175, 0.15);
+  --tag-gray-text: #D1D5DB;
+  --tag-gray-border: rgba(156, 163, 175, 0.3);
 }
 
 * {
@@ -136,6 +175,30 @@ body {
 
 .glow-border {
   box-shadow: 0 0 0 1px var(--accent-glow), 0 0 20px var(--accent-glow);
+}
+
+.tag-orange {
+  background-color: var(--tag-orange-bg);
+  color: var(--tag-orange-text);
+  border: 1px solid var(--tag-orange-border);
+}
+
+.tag-yellow {
+  background-color: var(--tag-yellow-bg);
+  color: var(--tag-yellow-text);
+  border: 1px solid var(--tag-yellow-border);
+}
+
+.tag-blue {
+  background-color: var(--tag-blue-bg);
+  color: var(--tag-blue-text);
+  border: 1px solid var(--tag-blue-border);
+}
+
+.tag-gray {
+  background-color: var(--tag-gray-bg);
+  color: var(--tag-gray-text);
+  border: 1px solid var(--tag-gray-border);
 }
 
 .card-hover {

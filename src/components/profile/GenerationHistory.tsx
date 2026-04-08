@@ -118,7 +118,7 @@ export function GenerationHistory() {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-white" />
+                  <ImageIcon className="w-8 h-8 text-[var(--text-primary)]" />
                 </div>
               </div>
             ) : (

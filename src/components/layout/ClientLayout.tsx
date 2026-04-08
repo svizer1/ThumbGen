@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { SignupModal } from '@/components/auth/SignupModal';
+import { ThumbBot } from '@/components/ai-assistant/ThumbBot';
 import { ReactNode, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 
@@ -39,6 +40,9 @@ export function ClientLayout({ children }: { children: ReactNode }) {
         />
         <main className="min-h-[calc(100vh-64px)]">{children}</main>
         <Footer />
+        
+        {/* ThumbBot AI Assistant */}
+        <ThumbBot />
         
         <LoginModal
           isOpen={showLogin}

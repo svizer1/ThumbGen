@@ -2,6 +2,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Zap, AlertCircle, Sparkles, Settings, Save } from 'lucide-react';
 import type { DetailedFields, GenerationMode, GenerateApiResponse } from '@/types';
+import type { YouTubePack } from '@/lib/youtube-packs';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
@@ -18,6 +19,7 @@ import { SettingsPanel } from './SettingsPanel';
 import { PUTER_MODELS, PUTER_QUALITY_OPTIONS } from '@/lib/providers/puter';
 import { BYTEZ_MODELS } from '@/lib/providers/bytez';
 import { HUGGINGFACE_MODELS } from '@/lib/providers/huggingface';
+import { GOOGLE_AI_MODELS } from '@/lib/providers/google-ai';
 import { usePuterGeneration } from '@/hooks/usePuterGeneration';
 import { smartEnhancePrompt, enhancePromptWithAI } from '@/lib/prompt-enhancer';
 import { savePreset } from '@/lib/presets';
@@ -25,6 +27,7 @@ import type { Preset } from '@/lib/presets';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
 import toast from 'react-hot-toast';
+import { FunCaptcha } from '@/components/ui/FunCaptcha';
  
  const EMPTY_DETAILS: DetailedFields = { 
    face: '', 
@@ -37,8 +40,12 @@ import toast from 'react-hot-toast';
    style: '', 
    extraDetails: '', 
  }; 
+
+interface GeneratorFormProps {
+  packConfig?: YouTubePack['config'];
+}
  
-export function GeneratorForm() {
+export function GeneratorForm({ packConfig }: GeneratorFormProps) {
   const { user, userData, refreshUserData } = useAuth();
   // ── Form state ────────────────────────────────────────────────────────────
   const [characterFile, setCharacterFile] = useState<File | null>(null);
@@ -47,22 +54,67 @@ export function GeneratorForm() {
   const [generalDescription, setGeneralDescription] = useState('');
   const [details, setDetails] = useState<DetailedFields>(EMPTY_DETAILS);
   const [mode, setMode] = useState<GenerationMode>('prompt');
-  const [apiProvider, setApiProvider] = useState<'default' | 'puter' | 'bytez' | 'huggingface'>('bytez');
+  const [apiProvider, setApiProvider] = useState<'default' | 'puter' | 'bytez' | 'huggingface' | 'google-ai'>('bytez');
   const [puterModel, setPuterModel] = useState('gpt-image-1');
   const [puterQuality, setPuterQuality] = useState<string>('low');
   const [bytezModel, setBytezModel] = useState('google/gemini-3.1-flash-image-preview');
-  const [huggingfaceModel, setHuggingfaceModel] = useState('black-forest-labs/FLUX.1-dev');
+  const [huggingfaceModel, setHuggingfaceModel] = useState('stabilityai/stable-diffusion-xl-base-1.0');
+  const [googleAIModel, setGoogleAIModel] = useState('gemini-3.1-flash-image-preview');
   const [imageSize, setImageSize] = useState<string>('1920x1080');
   const [generationType, setGenerationType] = useState<'text-to-image' | 'image-to-image'>('text-to-image');
+  const [strength, setStrength] = useState<number>(0.75);
   const [showSettings, setShowSettings] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
+  const [enhancingX2, setEnhancingX2] = useState(false);
   const [showSavePreset, setShowSavePreset] = useState(false);
   const [presetName, setPresetName] = useState('');
   const [presetDescription, setPresetDescription] = useState('');
   const [referenceDescription, setReferenceDescription] = useState('');
+  const [showCaptcha, setShowCaptcha] = useState(false);
 
   // ── Puter.js hook ────────────────────────────────────────────────────────
   const { generateImage: generateWithPuter } = usePuterGeneration();
+
+  // ── Load pack config ──────────────────────────────────────────────────────
+  const [initialPackConfig] = useState(packConfig);
+  
+  useEffect(() => {
+    if (packConfig) {
+      console.log('[GeneratorForm] Loading pack config:', packConfig);
+      setGeneralDescription(packConfig.generalDescription);
+      setDetails(packConfig.details);
+      setImageSize(packConfig.imageSize);
+      setGenerationType(packConfig.generationType);
+      setApiProvider(packConfig.apiProvider);
+      
+      if (packConfig.bytezModel) setBytezModel(packConfig.bytezModel);
+      if (packConfig.huggingfaceModel) setHuggingfaceModel(packConfig.huggingfaceModel);
+      if (packConfig.googleAIModel) setGoogleAIModel(packConfig.googleAIModel);
+      if (packConfig.puterModel) setPuterModel(packConfig.puterModel);
+      if (packConfig.puterQuality) setPuterQuality(packConfig.puterQuality);
+      
+      toast.success('Настройки пака загружены!');
+    }
+  }, [packConfig]);
+
+  // Reset to pack config
+  const resetToPackConfig = useCallback(() => {
+    if (initialPackConfig) {
+      setGeneralDescription(initialPackConfig.generalDescription);
+      setDetails(initialPackConfig.details);
+      setImageSize(initialPackConfig.imageSize);
+      setGenerationType(initialPackConfig.generationType);
+      setApiProvider(initialPackConfig.apiProvider);
+      
+      if (initialPackConfig.bytezModel) setBytezModel(initialPackConfig.bytezModel);
+      if (initialPackConfig.huggingfaceModel) setHuggingfaceModel(initialPackConfig.huggingfaceModel);
+      if (initialPackConfig.googleAIModel) setGoogleAIModel(initialPackConfig.googleAIModel);
+      if (initialPackConfig.puterModel) setPuterModel(initialPackConfig.puterModel);
+      if (initialPackConfig.puterQuality) setPuterQuality(initialPackConfig.puterQuality);
+      
+      toast.success('Настройки пака восстановлены!');
+    }
+  }, [initialPackConfig]);
 
   // Размеры изображений
   const imageSizes = [
@@ -283,6 +335,8 @@ export function GeneratorForm() {
           apiProvider,
           bytezModel,
           huggingfaceModel,
+          googleAIModel,
+          strength,
         };
 
         // Get auth token only for API mode
@@ -304,7 +358,13 @@ export function GeneratorForm() {
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.error ?? 'Generation request failed');
+          
+          if (err.error === 'bot_detected') {
+            setShowCaptcha(true);
+            return;
+          }
+          
+          throw new Error(err.message || err.error || 'Generation request failed');
         }
 
         const data: GenerateApiResponse = await res.json();
@@ -332,6 +392,7 @@ export function GeneratorForm() {
     puterQuality,
     bytezModel,
     huggingfaceModel,
+    googleAIModel,
     generateWithPuter,
     user,
     userData,
@@ -424,6 +485,37 @@ export function GeneratorForm() {
     }
   }
 
+  // Функция X2 улучшения промпта
+  async function handleEnhancePromptX2() {
+    setEnhancingX2(true);
+    try {
+      console.log('[GeneratorForm] Starting X2 prompt enhancement...');
+      
+      if (generalDescription.trim()) {
+        const response = await fetch('/api/prompt-enhancer-x2', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt: generalDescription })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setGeneralDescription(data.enhanced);
+          toast.success('Промпт улучшен до V2!');
+        } else {
+          throw new Error('API error');
+        }
+      }
+    } catch (error) {
+      console.error('[GeneratorForm] X2 Enhancement error:', error);
+      toast.error('Не удалось улучшить промпт V2');
+    } finally {
+      setTimeout(() => setEnhancingX2(false), 500);
+    }
+  }
+
   // Функция сохранения пресета
   function handleSavePreset() {
     if (!presetName.trim()) {
@@ -443,6 +535,7 @@ export function GeneratorForm() {
           apiProvider,
           bytezModel,
           huggingfaceModel,
+          googleAIModel,
           puterModel,
           puterQuality,
         },
@@ -463,7 +556,19 @@ export function GeneratorForm() {
         {/* Settings Panel */}
         <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 relative">
+          {/* Captcha Overlay */}
+          {showCaptcha && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-2xl">
+              <div className="w-full max-w-sm mx-auto">
+                <FunCaptcha onSuccess={() => {
+                  setShowCaptcha(false);
+                  generate();
+                }} />
+              </div>
+            </div>
+          )}
+
           {/* ── Left: Form ── */}
           <div className="space-y-5">
             {/* Presets */}
@@ -565,6 +670,7 @@ export function GeneratorForm() {
                   apiProvider,
                   bytezModel,
                   huggingfaceModel,
+                  googleAIModel,
                   puterModel,
                   puterQuality,
                 }}
@@ -594,22 +700,39 @@ export function GeneratorForm() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <CardTitle>Общее описание</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    Общее описание
+                  </CardTitle>
                   <p className="text-xs text-[var(--text-muted)] mt-1">
                     Опишите, что должна передавать эта миниатюра
                   </p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleEnhancePrompt}
-                  loading={enhancing}
-                  disabled={!generalDescription.trim() || enhancing}
-                  className="gap-2"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Улучшить
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleEnhancePrompt}
+                    loading={enhancing}
+                    disabled={!generalDescription.trim() || enhancing || enhancingX2}
+                    className="gap-1.5 hover:bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Улучшить промпт
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleEnhancePromptX2}
+                    loading={enhancingX2}
+                    disabled={!generalDescription.trim() || enhancing || enhancingX2}
+                    className="gap-1.5 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] hover:opacity-90 text-white shadow-md shadow-[var(--accent-glow)] border-0"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Улучшение V2
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <Textarea
@@ -695,11 +818,12 @@ export function GeneratorForm() {
                 <Select
                   label="API Провайдер"
                   value={apiProvider}
-                  onChange={(e) => setApiProvider(e.target.value as 'default' | 'puter' | 'bytez' | 'huggingface')}
+                  onChange={(e) => setApiProvider(e.target.value as 'default' | 'puter' | 'bytez' | 'huggingface' | 'google-ai')}
                   options={[
                     { value: 'bytez', label: 'Bytez (Google Imagen, FLUX) 🔥' },
-                    { value: 'huggingface', label: 'Hugging Face (FLUX, SDXL)' },
-                    { value: 'puter', label: 'Puter.js (бесплатно)' },
+                    { value: 'puter', label: 'Puter.js' },
+                    { value: 'huggingface', label: 'Hugging Face (SDXL) ⚠️' },
+                    { value: 'google-ai', label: 'Google AI Studio (требует биллинг) 💳' },
                     { value: 'default', label: 'Mock (тестовый)' },
                   ]}
                 />
@@ -711,14 +835,48 @@ export function GeneratorForm() {
                       label="Модель Bytez"
                       value={bytezModel}
                       onChange={(e) => setBytezModel(e.target.value)}
-                      options={BYTEZ_MODELS}
+                      options={BYTEZ_MODELS.filter(model => {
+                        // Если выбран image-to-image, показываем только поддерживающие модели
+                        if (generationType === 'image-to-image') {
+                          return model.supportsImageToImage !== false;
+                        }
+                        return true;
+                      })}
                     />
-                    <p className="text-xs text-[var(--text-muted)] bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-lg px-3 py-2">
-                      <span className="text-[var(--accent)] font-medium">Bytez API</span> - доступ к Google Imagen 4, Gemini Flash, FLUX и другим моделям
-                      {generationType === 'image-to-image' && (
-                        <span className="block mt-1 text-amber-400">⚠️ Image-to-image может не поддерживаться всеми моделями Bytez</span>
-                      )}
-                    </p>
+                    
+                    {/* Strength slider for image-to-image */}
+                    {generationType === 'image-to-image' && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--text-primary)] flex items-center justify-between">
+                          <span>Strength (сила изменений)</span>
+                          <span className="text-[var(--accent)]">{strength.toFixed(2)}</span>
+                        </label>
+                        <input 
+                          type="range" 
+                          min="0" 
+                          max="1" 
+                          step="0.05" 
+                          value={strength}
+                          onChange={(e) => setStrength(parseFloat(e.target.value))}
+                          className="w-full h-2 bg-[var(--bg-surface)] rounded-lg appearance-none cursor-pointer accent-[var(--accent)]"
+                        />
+                        <p className="text-xs text-[var(--text-muted)]">
+                          0.0 = минимальные изменения, 1.0 = полная трансформация
+                        </p>
+                      </div>
+                    )}
+                    
+                    {generationType === 'image-to-image' ? (
+                      <p className="text-xs text-green-400 bg-green-950/30 border border-green-700/30 rounded-lg px-3 py-2">
+                        ✅ <span className="font-medium">Bytez поддерживает image-to-image!</span>
+                        <br />
+                        Загрузите изображение выше и опишите желаемую трансформацию
+                      </p>
+                    ) : (
+                      <p className="text-xs text-[var(--text-muted)] bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-lg px-3 py-2">
+                        <span className="text-[var(--accent)] font-medium">Bytez API</span> - доступ к Google Imagen 4, Gemini Flash, FLUX и другим моделям
+                      </p>
+                    )}
                   </>
                 )}
 
@@ -773,6 +931,33 @@ export function GeneratorForm() {
 
                     <p className="text-xs text-[var(--text-muted)] bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-lg px-3 py-2">
                       <span className="text-[var(--accent)] font-medium">Puter.js</span> — бесплатная генерация изображений без API ключей
+                    </p>
+                  </>
+                )}
+
+                {/* Google AI Model Selection */}
+                {apiProvider === 'google-ai' && (
+                  <>
+                    <Select
+                      label="Модель Google AI"
+                      value={googleAIModel}
+                      onChange={(e) => setGoogleAIModel(e.target.value)}
+                      options={GOOGLE_AI_MODELS.filter(model => {
+                        // Если выбран image-to-image, показываем только поддерживающие модели
+                        if (generationType === 'image-to-image') {
+                          return model.supportsImageToImage !== false;
+                        }
+                        return true;
+                      })}
+                    />
+                    <p className="text-xs text-amber-400 bg-amber-950/30 border border-amber-700/30 rounded-lg px-3 py-2">
+                      ⚠️ <span className="font-medium">Google AI Studio</span>
+                      <br />
+                      <span className="block mt-1">• Text модели (Gemini 2.0) - бесплатны ✅</span>
+                      <span className="block mt-1">• Image модели (Nano Banana) - требуют биллинг 💳</span>
+                      {generationType === 'image-to-image' && (
+                        <span className="block mt-1 text-green-400">⭐ Nano Banana 2 поддерживает image-to-image (с биллингом)</span>
+                      )}
                     </p>
                   </>
                 )}

@@ -86,9 +86,15 @@ export async function addCreditsToUser(
 export async function activateSubscription(
   telegramId: number,
   plan: SubscriptionPlan,
-  transactionId: string
+  transactionId: string,
+  isYearly: boolean = false
 ): Promise<boolean> {
   try {
+    let creditsToAdd = 0;
+    if (plan === 'starter') creditsToAdd = isYearly ? 2400 : 200;
+    else if (plan === 'pro') creditsToAdd = isYearly ? 7200 : 600;
+    else if (plan === 'unlimited') creditsToAdd = 999999;
+
     // Get Firebase UID from Telegram ID
     const telegramUserDoc = await adminDb.collection('telegram_users').doc(telegramId.toString()).get();
     if (!telegramUserDoc.exists) {
@@ -102,7 +108,11 @@ export async function activateSubscription(
       // Create a temporary Firebase user
       const tempUid = `telegram_${telegramId}`;
       const currentPeriodEnd = new Date();
-      currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
+      if (isYearly) {
+        currentPeriodEnd.setFullYear(currentPeriodEnd.getFullYear() + 1);
+      } else {
+        currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
+      }
 
       await adminDb.collection('users').doc(tempUid).set({
         uid: tempUid,
@@ -110,7 +120,7 @@ export async function activateSubscription(
         displayName: telegramUserDoc.data()?.firstName,
         photoURL: null,
         emailVerified: false,
-        credits: 0,
+        credits: creditsToAdd,
         balanceMode: 'credits',
         dollarBalance: 0,
         subscription: {
@@ -136,15 +146,20 @@ export async function activateSubscription(
       return true;
     }
 
-    // Calculate subscription end date (1 month from now)
+    // Calculate subscription end date
     const currentPeriodEnd = new Date();
-    currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
+    if (isYearly) {
+      currentPeriodEnd.setFullYear(currentPeriodEnd.getFullYear() + 1);
+    } else {
+      currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
+    }
 
     // Update subscription
     await adminDb.collection('users').doc(firebaseUid).update({
       'subscription.plan': plan,
       'subscription.status': 'active',
       'subscription.currentPeriodEnd': admin.firestore.Timestamp.fromDate(currentPeriodEnd),
+      credits: admin.firestore.FieldValue.increment(creditsToAdd)
     });
 
     // Log transaction

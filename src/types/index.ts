@@ -22,9 +22,10 @@ export interface GenerationInput {
   characterImageUrl?: string;
   imageSize?: string;
   generationType?: 'text-to-image' | 'image-to-image';
-  apiProvider?: 'default' | 'puter' | 'bytez' | 'huggingface';
+  apiProvider?: 'default' | 'puter' | 'bytez' | 'huggingface' | 'google-ai';
   bytezModel?: string;
   huggingfaceModel?: string;
+  googleAIModel?: string;
 }
 
 export interface GenerationResult {

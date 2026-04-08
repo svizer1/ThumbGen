@@ -73,23 +73,23 @@ const STYLE_OPTIONS = [
    const filledCount = Object.values(value).filter((v) => v.trim()).length; 
  
    return ( 
-     <div className="border border-[#252535] rounded-xl overflow-hidden"> 
+     <div className="border border-[var(--border-default)] rounded-xl overflow-hidden"> 
        {/* Accordion header */} 
         <button 
           type="button" 
           onClick={() => setExpanded(!expanded)} 
-          className="w-full flex items-center justify-between px-4 py-3.5 bg-[#0f0f1a] hover:bg-[#141420] transition-colors text-left" 
+          className="w-full flex items-center justify-between px-4 py-3.5 bg-[var(--bg-base)] hover:bg-[var(--bg-card)] transition-colors text-left" 
         > 
           <div className="flex items-center gap-2.5"> 
-            <span className="text-sm font-semibold text-slate-200">Детальные настройки</span> 
+            <span className="text-sm font-semibold text-[var(--text-primary)]">Детальные настройки</span> 
             {filledCount > 0 && ( 
-              <span className="text-[10px] font-medium text-violet-400 bg-violet-500/15 border border-violet-500/20 px-1.5 py-0.5 rounded-full"> 
+              <span className="text-[10px] font-medium text-[var(--accent)] bg-[var(--accent-glow)] border border-[var(--accent)]/20 px-1.5 py-0.5 rounded-full"> 
                 {filledCount} заполнено 
               </span> 
             )} 
           </div> 
           <ChevronDown 
-            className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${ 
+            className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-200 ${ 
               expanded ? 'rotate-180' : '' 
             }`} 
           /> 
@@ -97,7 +97,7 @@ const STYLE_OPTIONS = [
  
        {/* Fields */} 
        {expanded && ( 
-          <div className="p-4 space-y-4 bg-[#0c0c17] border-t border-[#1e1e2e]"> 
+          <div className="p-4 space-y-4 bg-[var(--bg-base)] border-t border-[var(--border-subtle)]"> 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> 
               <Input 
                 label="Лицо / Персонаж" 

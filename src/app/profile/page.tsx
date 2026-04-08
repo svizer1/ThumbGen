@@ -62,7 +62,7 @@ export default function ProfilePage() {
   const getPlanColor = (plan: string) => {
     switch (plan) {
       case 'free':
-        return 'text-gray-400';
+        return 'text-[var(--text-muted)]';
       case 'starter':
         return 'text-blue-400';
       case 'pro':
@@ -70,7 +70,7 @@ export default function ProfilePage() {
       case 'unlimited':
         return 'text-amber-400';
       default:
-        return 'text-gray-400';
+        return 'text-[var(--text-muted)]';
     }
   };
 
@@ -130,11 +130,15 @@ export default function ProfilePage() {
         {/* Left Column - User Info */}
         <div className="lg:col-span-1 space-y-8">
           {/* User Card */}
-          <Card className="animate-slideInLeft">
-            <div className="p-6">
+          <Card className="animate-slideInLeft overflow-hidden border-[var(--border-default)] hover:border-[var(--border-strong)] transition-colors duration-300">
+            <div className="relative h-32 bg-[var(--bg-surface)] border-b border-[var(--border-default)] flex items-center justify-center overflow-hidden">
+               <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay"></div>
+               <div className="absolute top-0 w-full h-full bg-gradient-to-b from-transparent to-[var(--bg-card)]/80"></div>
+            </div>
+            <div className="px-6 pb-6 relative">
               <div className="flex flex-col items-center text-center">
                 {/* Avatar */}
-                <div className="w-24 h-24 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-3xl font-bold mb-4 transition-transform duration-300 hover:scale-105">
+                <div className="w-24 h-24 rounded-full bg-[var(--bg-surface)] border-4 border-[var(--bg-card)] flex items-center justify-center text-white text-3xl font-bold -mt-12 mb-4 relative z-10 shadow-lg transition-transform duration-300 hover:scale-105 overflow-hidden">
                   {userData.photoURL ? (
                     <img
                       src={userData.photoURL}
@@ -142,12 +146,14 @@ export default function ProfilePage() {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    userData.displayName?.charAt(0).toUpperCase() || 'U'
+                    <div className="w-full h-full rounded-full bg-[var(--bg-elevated)] text-[var(--text-secondary)] flex items-center justify-center border border-[var(--border-default)]">
+                      {userData.displayName?.charAt(0).toUpperCase() || 'U'}
+                    </div>
                   )}
                 </div>
 
                 {/* Name & Email */}
-                <h2 className="text-xl font-bold text-[var(--text-primary)] mb-1">
+                <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
                   {userData.displayName || 'Пользователь'}
                 </h2>
                 <p className="text-sm text-[var(--text-muted)] mb-4 break-all">
@@ -336,15 +342,15 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-[var(--bg-surface)] rounded-lg border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-all duration-200">
+              <div className="flex items-center justify-between p-4 bg-[var(--bg-surface)] rounded-lg border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-all duration-200 cursor-pointer" onClick={() => toast.success('Функция в разработке', { icon: '🚧' })}>
                 <div className="flex items-center gap-3">
                   <SettingsIcon className="w-5 h-5 text-[var(--text-muted)]" />
                   <div>
                     <p className="text-sm font-medium text-[var(--text-primary)]">
-                      Дополнительные настройки
+                      Дополнительные настройки (API Ключи)
                     </p>
                      <p className="text-xs text-[var(--text-muted)]">
-                      Скоро появятся
+                      Нажмите, чтобы добавить свои ключи
                     </p>
                   </div>
                 </div>

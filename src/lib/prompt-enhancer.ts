@@ -1,10 +1,61 @@
 import type { GenerationInput } from '@/types';
+import { callGroq } from './groq-client';
 
 /**
- * Улучшает промпт с помощью AI (Hugging Face API)
- * Использует более мощную модель для лучшего качества
+ * Улучшает промпт с помощью AI (Groq API)
+ * Использует Groq для быстрого и качественного улучшения
  */
 export async function enhancePromptWithAI(prompt: string): Promise<string> {
+  try {
+    const systemPrompt = `You are an expert at writing prompts for AI image generation models. Your task is to enhance prompts for YouTube thumbnail generation.
+
+Rules:
+1. Keep the core idea but make it more detailed and specific
+2. Add visual details: lighting, colors, composition, camera angle
+3. Add quality modifiers: "high quality", "professional", "detailed"
+4. For YouTube thumbnails emphasize: high contrast, bold colors, eye-catching, dramatic
+5. Keep it concise (under 200 words)
+6. Return ONLY the enhanced prompt, no explanations
+7. Do NOT include phrases like "Enhanced prompt:" or "Here is:"`;
+
+    const userPrompt = `Enhance this YouTube thumbnail prompt:\n\n${prompt}`;
+
+    try {
+      const enhanced = await callGroq(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        'llama-3.1-70b-versatile',
+        0.7,
+        500
+      );
+
+      // Очистка результата
+      const cleaned = cleanEnhancedPrompt(enhanced, prompt);
+
+      if (cleaned && cleaned.length > 20 && cleaned !== prompt) {
+        console.log(`[PromptEnhancer] ✅ Successfully enhanced with Groq`);
+        console.log(`[PromptEnhancer] Original length: ${prompt.length}, Enhanced length: ${cleaned.length}`);
+        return cleaned;
+      } else {
+        console.warn(`[PromptEnhancer] Groq returned invalid result, using fallback`);
+        return smartEnhancePrompt(prompt);
+      }
+    } catch (groqError) {
+      console.warn('[PromptEnhancer] Groq failed, using fallback:', groqError);
+      return smartEnhancePrompt(prompt);
+    }
+  } catch (error) {
+    console.error('[PromptEnhancer] Error:', error);
+    return smartEnhancePrompt(prompt);
+  }
+}
+
+/**
+ * DEPRECATED: Old HuggingFace implementation (kept for reference)
+ */
+async function enhancePromptWithAI_OLD_HF(prompt: string): Promise<string> {
   try {
     const apiKey = process.env.NEXT_PUBLIC_HUGGINGFACE_API_KEY || process.env.HUGGINGFACE_API_KEY;
     
@@ -13,7 +64,6 @@ export async function enhancePromptWithAI(prompt: string): Promise<string> {
       return smartEnhancePrompt(prompt);
     }
 
-    // Используем более мощную модель для улучшения промптов
     const models = [
       'mistralai/Mixtral-8x7B-Instruct-v0.1',
       'meta-llama/Meta-Llama-3-8B-Instruct',
@@ -22,7 +72,6 @@ export async function enhancePromptWithAI(prompt: string): Promise<string> {
 
     let lastError: any = null;
 
-    // Пробуем модели по очереди
     for (const model of models) {
       try {
         const systemPrompt = `You are an expert at writing prompts for AI image generation models. Your task is to enhance prompts for YouTube thumbnail generation.
@@ -367,4 +416,152 @@ function optimizePrompt(prompt: string): string {
   }
   
   return optimized;
+}
+
+/**
+ * Prompt Enhancer X2 - Усиленное улучшение промптов
+ * Превращает короткие описания в детальные профессиональные промпты
+ * Использует Groq API для быстрого и качественного улучшения
+ */
+export async function enhancePromptX2(prompt: string): Promise<string> {
+  try {
+    const systemPrompt = `Ты эксперт по написанию промптов для генерации изображений ИИ. Твоя задача — превратить короткое описание в высокодетализированный, кинематографичный и атмосферный промпт на русском языке.
+
+Правила:
+1. Используй художественный и выразительный стиль.
+2. Обязательно добавь описание освещения (динамичный свет, отражения, тени).
+3. Добавь описание деталей объекта (текстура, взгляд, фактура).
+4. Опиши окружение (глубина, природные или другие элементы, ощущение живого пространства).
+5. Завершай промпт фразой о композиции (кинематографично и гармонично).
+6. Верни ТОЛЬКО улучшенный промпт, без каких-либо вводных слов или объяснений.
+7. Промпт должен быть на русском языке.
+8. Обязательно сохраняй исходный объект, бренды, имена, числа и денежные суммы без потери смысла.
+9. Не пиши общий текст "добавьте объект", если в исходнике уже указан конкретный объект.
+
+Пример:
+Input: "добавь крокодила"
+Output: "Создай высокодетализированную, атмосферную сцену, в которой сочетаются реализм и художественная выразительность. На переднем плане присутствует крокодил — мощный, детализированный, с текстурой влажной чешуи и выразительным взглядом. Окружение наполнено динамичным светом и глубиной: добавь природные элементы, отражения в воде, тени и мелкие детали, создающие ощущение живого пространства. Композиция должна выглядеть кинематографично и гармонично!"`;
+
+    const userPrompt = `Улучши этот промпт, сохранив конкретику и смысл исходного запроса:\n\n${prompt}`;
+
+    try {
+      console.log(`[PromptEnhancerX2] Enhancing with Groq...`);
+      
+      const enhanced = await callGroq(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        'openai/gpt-oss-120b',
+        0.6,
+        800
+      );
+
+      // Очистка результата
+      const cleaned = cleanEnhancedPromptX2(enhanced, prompt);
+
+      if (cleaned && cleaned.length > 20 && cleaned !== prompt) {
+        console.log(`[PromptEnhancerX2] ✅ Enhanced with Groq`);
+        console.log(`[PromptEnhancerX2] Original: ${prompt.substring(0, 50)}...`);
+        console.log(`[PromptEnhancerX2] Enhanced: ${cleaned.substring(0, 100)}...`);
+        return cleaned;
+      } else {
+        console.warn('[PromptEnhancerX2] Groq returned invalid result, using fallback');
+        return smartEnhancePromptX2(prompt);
+      }
+    } catch (groqError) {
+      console.warn('[PromptEnhancerX2] Groq failed, using fallback:', groqError);
+      return smartEnhancePromptX2(prompt);
+    }
+  } catch (error) {
+    console.error('[PromptEnhancerX2] Error:', error);
+    return smartEnhancePromptX2(prompt);
+  }
+}
+
+/**
+ * Очистка улучшенного промпта X2
+ */
+function cleanEnhancedPromptX2(enhanced: string, original: string): string {
+  // Удаляем системные фразы
+  enhanced = enhanced
+    .replace(/^<s>\[INST\][\s\S]*?\[\/INST\]/, '')
+    .replace(/^.*?Enhanced prompt:?\s*/i, '')
+    .replace(/^.*?Here is:?\s*/i, '')
+    .replace(/^.*?Improved prompt:?\s*/i, '')
+    .replace(/^.*?Better prompt:?\s*/i, '')
+    .replace(/^Enhance this.*?prompt:\s*/i, '')
+    .replace(/^Output:\s*/i, '')
+    .replace(/^Result:\s*/i, '')
+    .trim();
+
+  // Удаляем кавычки
+  enhanced = enhanced.replace(/^["']|["']$/g, '');
+
+  // Удаляем повторяющийся оригинальный промпт
+  if (enhanced.toLowerCase().startsWith(original.toLowerCase())) {
+    enhanced = enhanced.slice(original.length).trim();
+  }
+
+  // Удаляем лишние пробелы
+  enhanced = enhanced
+    .replace(/\s+/g, ' ')
+    .replace(/\n+/g, ' ')
+    .trim();
+
+  return enhanced;
+}
+
+/**
+ * Fallback X2 enhancement без AI
+ */
+function smartEnhancePromptX2(prompt: string): string {
+  const enhanced = prompt.trim();
+  
+  // Определяем язык
+  const isRussian = /[а-яА-Я]/.test(enhanced);
+  
+  // Позиции
+  const positions = isRussian 
+    ? [
+        'левом нижнем углу изображения',
+        'правом верхнем углу композиции',
+        'центре кадра',
+        'на переднем плане',
+        'на заднем плане слева',
+      ]
+    : [
+        'bottom left corner of the image',
+        'top right corner of the composition',
+        'center of the frame',
+        'in the foreground',
+        'in the background on the left',
+      ];
+  
+  const position = positions[Math.floor(Math.random() * positions.length)];
+  
+  // Шаблоны для русского языка
+  if (isRussian) {
+    // Определяем тип объекта
+    const lowerPrompt = enhanced.toLowerCase();
+    
+    if (lowerPrompt.includes('крокодил') || lowerPrompt.includes('животн') || lowerPrompt.includes('птиц') || lowerPrompt.includes('зверь')) {
+      return `Добавьте реалистичного ${enhanced}, расположенного в ${position}, с детализированной текстурой кожи и шерсти, естественным освещением создающим мягкие тени и блики, чтобы он органично вписался в композицию и создавал эффект присутствия, профессиональная фотография дикой природы, высокая детализация каждой текстуры, 4K качество, резкий фокус на главном объекте, кинематографическое освещение`;
+    } else if (lowerPrompt.includes('человек') || lowerPrompt.includes('персон') || lowerPrompt.includes('люд') || lowerPrompt.includes('модель')) {
+      return `Добавьте ${enhanced}, расположенного в ${position}, с естественным выражением лица и позой, профессиональное студийное освещение подчеркивающее детали, детализированная текстура кожи и одежды, чтобы создать реалистичный эффект присутствия, портретная фотография высокого качества, 4K разрешение, резкий фокус на глазах, кинематографическая композиция`;
+    } else {
+      return `Добавьте ${enhanced}, расположенный в ${position}, с реалистичной текстурой и материалами, профессиональное освещение подчеркивающее все детали и формы, чтобы органично вписаться в сцену и создать гармоничную композицию, коммерческая фотография высокого качества, высокая детализация, 4K качество, резкий фокус, драматическое освещение`;
+    }
+  } else {
+    // Английский шаблон
+    const lowerPrompt = enhanced.toLowerCase();
+    
+    if (lowerPrompt.includes('animal') || lowerPrompt.includes('creature') || lowerPrompt.includes('bird')) {
+      return `Add a realistic ${enhanced}, positioned in the ${position}, with detailed skin and fur texture, natural lighting creating soft shadows and highlights, to organically fit into the composition and create a sense of presence, professional wildlife photography, high detail of every texture, 4K quality, sharp focus on the main subject, cinematic lighting`;
+    } else if (lowerPrompt.includes('person') || lowerPrompt.includes('human') || lowerPrompt.includes('model')) {
+      return `Add ${enhanced}, positioned in the ${position}, with natural facial expression and pose, professional studio lighting highlighting details, detailed skin and clothing texture, to create a realistic sense of presence, high-quality portrait photography, 4K resolution, sharp focus on eyes, cinematic composition`;
+    } else {
+      return `Add ${enhanced}, positioned in the ${position}, with realistic texture and materials, professional lighting emphasizing all details and forms, to organically fit into the scene and create a harmonious composition, high-quality commercial photography, high detail, 4K quality, sharp focus, dramatic lighting`;
+    }
+  }
 }
