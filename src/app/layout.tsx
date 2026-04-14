@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   title: 'ThumbGen AI — Генератор миниатюр для YouTube',
   description:
     'Создавайте профессиональные, привлекательные миниатюры для YouTube с помощью AI. Загружайте референсные изображения, описывайте свою идею и получайте впечатляющие миниатюры мгновенно.',
+  icons: {
+    icon: [{ url: '/favicon.ico?v=2', type: 'image/x-icon' }],
+    shortcut: '/favicon.ico?v=2',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
