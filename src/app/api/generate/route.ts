@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
         provider = new BytezProvider(apiKey, model);
         modelUsed = model;
         providerUsed = 'bytez';
-        console.log(`[generate] Using Bytez provider with model: ${model}`);
+        console.log(`[generate] Using Bytez provider with model: ${model}, key: ${apiKey.substring(0, 8)}...`);
       } else if (body.apiProvider === 'huggingface') {
         const apiKey = process.env.HUGGINGFACE_API_KEY;
         if (!apiKey) {
@@ -276,7 +276,11 @@ export async function POST(request: NextRequest) {
         createdAt: FieldValue.serverTimestamp(),
         mode: entry.mode,
         input: entry.input,
-        result: entry.result,
+        result: {
+          generatedPrompt: entry.result.generatedPrompt,
+          negativePrompt: entry.result.negativePrompt,
+          ...(entry.result.generatedImageUrl && { generatedImageUrl: entry.result.generatedImageUrl }),
+        },
         status: entry.status,
         ...(entry.error && { error: entry.error }),
         userId,

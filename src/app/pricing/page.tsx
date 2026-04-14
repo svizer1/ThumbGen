@@ -68,7 +68,9 @@ const plans = [
       'Генератор V2 с 15 паками примеров',
       'Prompt Enhancer X2',
       'Полное улучшение изображений',
+      'Playerok генератор карточек',
       'Wildberries генератор (базовый)',
+      'Паки примеров: GEN + Playerok + WB',
       'ThumbBot AI помощник',
       'API доступ',
       'Приоритетная генерация',
@@ -91,6 +93,7 @@ const plans = [
       'Без watermark',
       'Бессрочная история',
       'Все функции Pro',
+      'Playerok расширенный режим',
       'Wildberries расширенный (инфографика)',
       'ThumbBot с расширенным контекстом',
       'Batch processing для улучшения',
@@ -121,6 +124,15 @@ const creditPackages = [
     bonus: 50,
     popular: false,
   },
+];
+
+const pricingExamples = [
+  { src: '/examples/gen1.png', alt: 'GEN пример 1' },
+  { src: '/examples/gen3.png', alt: 'GEN пример 2' },
+  { src: '/examples/playerok_Claud.png', alt: 'Playerok Claude' },
+  { src: '/examples/playerok_Roblox.png', alt: 'Playerok Roblox' },
+  { src: '/examples/wb_protein.png', alt: 'WB Protein' },
+  { src: '/examples/wb_protein2.png', alt: 'WB Protein 2' },
 ];
 
 export default function PricingPage() {
@@ -199,8 +211,8 @@ export default function PricingPage() {
             return (
               <Card
                 key={plan.id}
-                className={`relative overflow-hidden transition-all duration-300 animate-scaleIn stagger-${index + 1} group ${
-                  plan.popular ? 'ring-2 ring-[var(--accent)] shadow-[0_0_40px_rgba(168,85,247,0.15)] scale-105 z-10 border-[var(--accent)]/50' : 'hover:-translate-y-2 border-[var(--border-default)]'
+                className={`relative overflow-hidden transition-all duration-300 animate-fadeInUp stagger-${index + 1} group ${
+                  plan.popular ? 'ring-2 ring-[var(--accent)] shadow-[0_0_40px_var(--accent-glow)] scale-105 z-10 border-[var(--accent)]/50 hover:shadow-[0_0_60px_var(--accent-glow)]' : 'hover:-translate-y-2 border-[var(--border-default)]'
                 }`}
                 hover={true}
               >
@@ -210,10 +222,10 @@ export default function PricingPage() {
                 }`} />
 
                 {plan.popular && (
-                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500 via-[var(--accent)] to-pink-500" />
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[var(--accent)] via-[var(--accent-hover)] to-[var(--accent)]" />
                 )}
                 {plan.popular && (
-                  <div className="absolute top-4 right-4 bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-bold px-3 py-1 rounded-full border border-[var(--accent)]/20 animate-pulse">
+                  <div className="absolute top-4 right-4 bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-bold px-3 py-1 rounded-full border border-[var(--accent)]/20 animate-glow">
                     Популярный
                   </div>
                 )}
@@ -443,45 +455,20 @@ export default function PricingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Example 1 */}
-            <div className="group animate-scaleIn stagger-1">
-              <div className="relative overflow-hidden rounded-2xl border border-[var(--border-default)] transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 hover:border-[var(--accent)]">
-                <div className="aspect-video relative">
-                  <img 
-                    src="/examples/1.png" 
-                    alt="Пример миниатюры 1"
-                    className="w-full h-full object-cover"
-                  />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {pricingExamples.map((example, index) => (
+              <div key={example.src} className={`group animate-scaleIn stagger-${Math.min(index + 1, 6)}`}>
+                <div className="relative overflow-hidden rounded-2xl border border-[var(--border-default)] transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 hover:border-[var(--accent)]">
+                  <div className="aspect-video relative">
+                    <img
+                      src={example.src}
+                      alt={example.alt}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Example 2 */}
-            <div className="group animate-scaleIn stagger-2">
-              <div className="relative overflow-hidden rounded-2xl border border-[var(--border-default)] transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/20 hover:border-[var(--accent)]">
-                <div className="aspect-video relative">
-                  <img 
-                    src="/examples/2.png" 
-                    alt="Пример миниатюры 2"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Example 3 */}
-            <div className="group animate-scaleIn stagger-3">
-              <div className="relative overflow-hidden rounded-2xl border border-[var(--border-default)] transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20 hover:border-[var(--accent)]">
-                <div className="aspect-video relative">
-                  <img 
-                    src="/examples/3.png" 
-                    alt="Пример миниатюры 3"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 

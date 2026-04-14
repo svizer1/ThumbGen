@@ -5,10 +5,12 @@
 import { callGroq } from './groq-client';
 import { BytezProvider } from './providers/bytez';
 
-export type WBVisualStyle = 'minimal' | 'standard' | 'premium';
+export type WBVisualStyle = 'minimal' | 'standard' | 'premium' | 'flavor_burst' | 'creative_glow';
 
 export interface WBProductCard {
   productName: string;
+  brandName?: string;
+  surface?: string;
   category: string;
   description: string;
   features: string[];
@@ -22,6 +24,7 @@ export interface WBProductCard {
 
 export interface WBGenerationResult {
   mainImage: string;
+  alternativeImages?: string[];
   infographic?: string;
   additionalAngles?: string[];
   seoDescription: string;
@@ -32,12 +35,16 @@ export interface WBGenerationResult {
 function getStyleDescriptor(style: WBVisualStyle = 'standard') {
   switch (style) {
     case 'minimal':
-      return 'minimalist Wildberries product card, ultra clean composition, generous whitespace, restrained typography, no visual clutter, precise product focus';
+      return 'minimalist Wildberries/Ozon product card, ultra clean composition, generous whitespace, restrained typography, no visual clutter, precise product focus';
     case 'premium':
-      return 'premium Wildberries product card, elevated art direction, modern gradients, layered lighting, high-end UI details, premium navigation accents, visually rich but readable';
+      return 'premium Wildberries/Ozon product card, elevated art direction, modern gradients, layered lighting, high-end UI details, premium navigation accents, visually rich but readable';
+    case 'flavor_burst':
+      return 'vibrant Wildberries/Ozon product card, best taste aesthetic, explosive flavor composition, juicy flying ingredients and berries around the product, modern Ozon/WB design, highly attractive and mouth-watering, dynamic composition';
+    case 'creative_glow':
+      return 'unusual and creative Wildberries/Ozon product card, non-standard elements, magical glowing effects, water splashes, unique custom typography, highly creative modern composition, neon accents, futuristic and premium';
     case 'standard':
     default:
-      return 'standard Wildberries marketplace card, familiar interface blocks, clean filters and switches, balanced content hierarchy, informative and easy to scan';
+      return 'standard Wildberries/Ozon marketplace card, familiar interface blocks, clean filters and switches, balanced content hierarchy, informative and easy to scan';
   }
 }
 
@@ -47,6 +54,10 @@ function getStyleVoice(style: WBVisualStyle = 'standard') {
       return 'Сделай подачу лаконичной, чистой и уверенной.';
     case 'premium':
       return 'Сделай подачу премиальной, эмоциональной и визуально выразительной.';
+    case 'flavor_burst':
+      return 'Сделай подачу максимально сочной, аппетитной, подчеркивающей лучший вкус и яркие ингредиенты.';
+    case 'creative_glow':
+      return 'Сделай подачу креативной, необычной, с акцентом на уникальность, свечение и нестандартный дизайн.';
     case 'standard':
     default:
       return 'Сделай подачу понятной, привычной для Wildberries и хорошо структурированной.';
@@ -65,14 +76,18 @@ export async function generateWBProductImage(
     console.log('[WBGenerator] Generating main product image');
 
     const styleDescriptor = getStyleDescriptor(product.style);
-    const prompt = `Professional product photography of ${product.productName}, ${product.description}, 
-    clean white background, studio lighting, high quality commercial photography, 
+    const brandContext = product.brandName ? `brand: ${product.brandName}, visible logo, ` : '';
+    const surfaceContext = product.surface ? `placed on ${product.surface}, ` : '';
+    const backgroundContext = product.surface ? `professional background fitting the surface, ` : `clean white background, no shadows on background, `;
+
+    const prompt = `Professional product photography of ${product.productName}, ${brandContext}${surfaceContext}${product.description}, 
+    ${backgroundContext}studio lighting, high quality commercial photography, 
     centered composition, 3:4 aspect ratio, sharp focus, detailed texture, 
-    e-commerce product shot, professional lighting setup, no shadows on background,
+    e-commerce product shot, professional lighting setup,
     ${styleDescriptor},
     ${product.features.join(', ')}, 4K quality, professional product photography`;
 
-    const negativePrompt = 'blurry, low quality, bad lighting, shadows on background, cluttered, messy, amateur, distorted, watermark, text, words, letters, labels, writing, typography, logo, signature';
+    const negativePrompt = 'blurry, low quality, bad lighting, cluttered, messy, amateur, distorted, watermark, text, words, letters, labels, writing, typography, signature';
 
     if (apiProvider === 'bytez') {
       console.log('[WBGenerator] Calling Bytez provider for main image...');
@@ -263,7 +278,11 @@ function generateTemplateSEODescription(product: WBProductCard): string {
     ? 'Подача карточки выполнена в чистом минималистичном стиле, чтобы покупатель сразу видел главное.'
     : product.style === 'premium'
       ? 'Премиальная подача карточки усиливает восприятие товара и помогает выгодно выделиться среди конкурентов.'
-      : 'Стандартная структурированная подача карточки помогает быстро донести преимущества товара до покупателя.';
+      : product.style === 'flavor_burst'
+        ? 'Карточка оформлена в сочном стиле с яркими ингредиентами, вызывая желание попробовать товар прямо сейчас.'
+        : product.style === 'creative_glow'
+          ? 'Креативный дизайн карточки со светящимися элементами притягивает взгляд и выделяет товар на фоне других.'
+          : 'Стандартная структурированная подача карточки помогает быстро донести преимущества товара до покупателя.';
 
   return `${product.productName} - ${product.description}
 
@@ -292,44 +311,73 @@ export async function generateWBProductCard(
     includeInfographic?: boolean;
     includeMultipleAngles?: boolean;
     anglesCount?: number;
+    fastMode?: boolean;
   } = {}
 ): Promise<WBGenerationResult> {
   try {
     console.log('[WBGenerator] Generating complete product card');
 
-    // Generate main image
-    const mainImage = await generateWBProductImage(product);
+    // Execute all independent tasks concurrently
+    const promises: Promise<any>[] = [];
+
+    // Main image(s) generation
+    if (options.fastMode) {
+      console.log('[WBGenerator] Fast mode enabled: generating 3 variants concurrently');
+      promises.push(
+        Promise.all([
+          generateWBProductImage(product),
+          generateWBProductImage(product),
+          generateWBProductImage(product)
+        ])
+      );
+    } else {
+      promises.push(generateWBProductImage(product));
+    }
 
     // Generate infographic if requested
-    let infographic: string | undefined;
     if (options.includeInfographic && product.infographicData) {
-      try {
-        infographic = await generateWBInfographic(product);
-      } catch (error) {
-        console.warn('[WBGenerator] Infographic generation failed:', error);
-      }
+      promises.push(generateWBInfographic(product).catch(e => {
+        console.warn('[WBGenerator] Infographic generation failed:', e);
+        return undefined;
+      }));
+    } else {
+      promises.push(Promise.resolve(undefined));
     }
 
     // Generate additional angles if requested
-    let additionalAngles: string[] | undefined;
     if (options.includeMultipleAngles) {
-      try {
-        additionalAngles = await generateWBMultipleAngles(
-          product,
-          options.anglesCount || 3
-        );
-      } catch (error) {
-        console.warn('[WBGenerator] Additional angles generation failed:', error);
-      }
+      promises.push(generateWBMultipleAngles(product, options.anglesCount || 3).catch(e => {
+        console.warn('[WBGenerator] Additional angles generation failed:', e);
+        return undefined;
+      }));
+    } else {
+      promises.push(Promise.resolve(undefined));
     }
 
     // Generate SEO description
-    const seoDescription = await generateWBSEODescription(product);
+    promises.push(generateWBSEODescription(product));
+
+    const [mainImageResult, infographicResult, additionalAnglesResult, seoDescriptionResult] = await Promise.all(promises);
+
+    let mainImage: string;
+    let alternativeImages: string[] | undefined;
+
+    if (options.fastMode) {
+      mainImage = mainImageResult[0];
+      alternativeImages = [mainImageResult[1], mainImageResult[2]];
+    } else {
+      mainImage = mainImageResult;
+    }
+
+    const infographic = infographicResult;
+    const additionalAngles = additionalAnglesResult;
+    const seoDescription = seoDescriptionResult;
 
     console.log('[WBGenerator] ✅ Complete product card generated');
 
     return {
       mainImage,
+      alternativeImages,
       infographic,
       additionalAngles,
       seoDescription,

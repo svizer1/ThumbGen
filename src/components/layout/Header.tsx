@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Layers, Zap, History, Sun, Moon, Palette, DollarSign, LogIn, Sparkles, Wand2, ShoppingBag } from 'lucide-react';
+import { Layers, Zap, History, Sun, Moon, Palette, DollarSign, LogIn, Sparkles, Wand2, ShoppingBag, Flame, Gamepad2 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileButton } from '@/components/profile/ProfileButton';
@@ -22,6 +22,7 @@ export function Header({ onOpenLogin, onOpenSignup }: HeaderProps) {
     { id: 'cream' as const, label: 'Молочная', icon: Sun },
     { id: 'brown-cream' as const, label: 'Коричневая', icon: Palette },
     { id: 'dark' as const, label: 'Темная', icon: Moon },
+    { id: 'red' as const, label: 'Красная', icon: Flame },
   ];
 
   return (
@@ -29,9 +30,7 @@ export function Header({ onOpenLogin, onOpenSignup }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 bg-[var(--accent)] rounded-lg flex items-center justify-center shadow-lg group-hover:opacity-90 transition-opacity">
-            <Layers className="w-4 h-4 text-[var(--text-primary)]" />
-          </div>
+          <img src="/logo.png" alt="ThumbGen" className="w-8 h-8 rounded-lg shadow-lg group-hover:opacity-90 transition-opacity object-cover" />
           <span className="font-bold text-[var(--text-primary)] text-base tracking-tight">ThumbGen</span>
           <span className="hidden sm:inline-flex text-[10px] font-semibold text-[var(--accent)] bg-[var(--accent-glow)] border border-[var(--border-default)] px-1.5 py-0.5 rounded-full uppercase tracking-wider">
             AI
@@ -64,6 +63,13 @@ export function Header({ onOpenLogin, onOpenSignup }: HeaderProps) {
             icon={<ShoppingBag className="w-3.5 h-3.5" />}
           >
             WB Карточки
+          </NavLink>
+          <NavLink
+            href="/playerok"
+            active={pathname.startsWith('/playerok')}
+            icon={<Gamepad2 className="w-3.5 h-3.5" />}
+          >
+            Playerok
           </NavLink>
           <NavLink
             href="/history"

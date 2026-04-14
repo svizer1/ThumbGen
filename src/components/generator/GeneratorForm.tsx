@@ -570,7 +570,7 @@ export function GeneratorForm({ packConfig }: GeneratorFormProps) {
           )}
 
           {/* ── Left: Form ── */}
-          <div className="space-y-5">
+          <div className="space-y-5 animate-fadeInUp stagger-1">
             {/* Presets */}
             <Card>
               <CardHeader>
@@ -1009,7 +1009,7 @@ export function GeneratorForm({ packConfig }: GeneratorFormProps) {
         </div> 
  
        {/* ── Right: Results ── */} 
-        <div className="space-y-5"> 
+        <div className="space-y-5 animate-fadeInUp stagger-2"> 
           {/* Empty / waiting state */} 
           {!hasResult && !isLoading && ( 
             <div className="rounded-xl border-2 border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface)] p-10 text-center"> 

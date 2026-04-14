@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-type Theme = 'cream' | 'brown-cream' | 'dark';
+type Theme = 'cream' | 'brown-cream' | 'dark' | 'red';
 
 interface ThemeContextType {
   theme: Theme;
@@ -17,7 +17,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as Theme;
-    if (savedTheme && ['cream', 'brown-cream', 'dark'].includes(savedTheme)) {
+    if (savedTheme && ['cream', 'brown-cream', 'dark', 'red'].includes(savedTheme)) {
       setTheme(savedTheme);
       document.documentElement.setAttribute('data-theme', savedTheme);
     } else {

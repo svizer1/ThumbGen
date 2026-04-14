@@ -80,8 +80,9 @@ export async function POST(request: NextRequest) {
       }, { status: 403 });
     }
 
-    // Check credits (3 credits for basic, 5 for advanced)
-    const creditsRequired = (options.includeInfographic || options.includeMultipleAngles) ? 5 : 3;
+    // Check credits (3 credits for basic, 5 for advanced, +2 for fastMode)
+    const baseCredits = (options.includeInfographic || options.includeMultipleAngles) ? 5 : 3;
+    const creditsRequired = baseCredits + (options.fastMode ? 2 : 0);
     if ((userData.credits || 0) < creditsRequired) {
       return NextResponse.json({ 
         error: 'Insufficient credits',
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest) {
         },
         result: {
           generatedImageUrl: result.mainImage,
+          alternativeImages: result.alternativeImages || null,
           additionalAngles: result.additionalAngles || null,
           infographic: result.infographic || null,
           seoDescription: result.seoDescription || null,
@@ -132,6 +134,24 @@ export async function POST(request: NextRequest) {
       console.log('[wildberries/generate] History saved to Firestore');
     } catch (err) {
       console.error('[wildberries/generate] Failed to save history:', err);
+    }
+
+    // Save spending history
+    try {
+      await adminDb.collection('users').doc(userId).collection('spending_history').add({
+        timestamp: new Date(),
+        model: 'wildberries-generator',
+        source: 'wildberries',
+        tokens: 0,
+        duration: 0,
+        spent: creditsRequired,
+        currency: 'credits',
+        requestId,
+        status: 'success',
+      });
+      console.log('[wildberries/generate] Spending history saved');
+    } catch (err) {
+      console.error('[wildberries/generate] Failed to save spending history:', err);
     }
 
     console.log('[wildberries/generate] ✅ Product card generated successfully');

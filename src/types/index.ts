@@ -1,4 +1,4 @@
-export type GenerationMode = 'prompt' | 'api' | 'wildberries';
+export type GenerationMode = 'prompt' | 'api' | 'wildberries' | 'playerok';
 
 export interface DetailedFields {
   face: string;
@@ -16,6 +16,13 @@ export interface GenerationInput {
   generalDescription: string;
   details?: DetailedFields;
   mode: GenerationMode;
+  productName?: string;
+  category?: string;
+  style?: string;
+  topText?: string;
+  middleText?: string;
+  bottomText?: string;
+  accentText?: string;
   sourceImageUrls?: string[];
   referenceImageUrl?: string;
   referenceDescription?: string;
@@ -41,7 +48,17 @@ export interface HistoryEntry {
   createdAt: string;
   mode: GenerationMode;
   input: GenerationInput;
-  result: GenerationResult;
+  result: Partial<GenerationResult>;
+  playerokCard?: {
+    id: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    link: string;
+    category: string;
+    status: string;
+    priceRub: number;
+  };
   status: 'success' | 'error';
   error?: string;
 }

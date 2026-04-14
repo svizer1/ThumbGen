@@ -65,7 +65,7 @@ export function PackPreview({ pack, onSelect, isLocked = false }: PackPreviewPro
   return (
     <Card
       className={cn(
-        'group relative overflow-hidden border-[var(--border-strong)] bg-[linear-gradient(180deg,var(--bg-card),var(--bg-surface))] p-0',
+        'group relative overflow-hidden border-[var(--border-strong)] bg-[linear-gradient(180deg,var(--bg-card),var(--bg-surface))] p-0 card-hover',
         isLocked ? 'opacity-80' : 'cursor-pointer'
       )}
       onClick={() => !isLocked && onSelect(pack)}

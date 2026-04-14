@@ -187,7 +187,7 @@ export default function EnhancePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <div className="mb-8">
+      <div className="mb-8 animate-fadeIn">
         <Link href="/" className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4">
           <ArrowLeft className="w-4 h-4" />
           Вернуться на главную
@@ -201,7 +201,7 @@ export default function EnhancePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fadeInUp stagger-1">
           <Card>
             <div className="p-6">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
@@ -424,7 +424,7 @@ export default function EnhancePage() {
           )}
         </div>
 
-        <div>
+        <div className="animate-fadeInUp stagger-2">
           <Card>
             <div className="p-6">
               <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">

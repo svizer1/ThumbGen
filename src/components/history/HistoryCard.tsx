@@ -19,9 +19,12 @@
   const [downloading, setDownloading] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  const isPromptMode = entry.mode === 'prompt'; 
-  const prompt = entry.result.generatedPrompt; 
-  const imageUrl = entry.result.generatedImageUrl; 
+  const isPromptMode = entry.mode === 'prompt';
+  const isWildberriesMode = entry.mode === 'wildberries';
+  const isPlayerokMode = entry.mode === 'playerok';
+  const playerokCard = entry.playerokCard;
+  const prompt = entry.result?.generatedPrompt ?? '';
+  const imageUrl = entry.result?.generatedImageUrl ?? playerokCard?.imageUrl;
 
   async function copyPrompt() { 
     if (!prompt) return; 
@@ -109,22 +112,26 @@
             {/* Mode badge */} 
            <div className="absolute top-2.5 left-2.5"> 
              <span 
-               className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-1 rounded-full ${
-                 isPromptMode 
-                   ? 'bg-[var(--accent)] text-white' 
-                   : entry.mode === 'wildberries'
-                     ? 'bg-fuchsia-600/80 text-fuchsia-100'
-                     : 'bg-emerald-700/80 text-emerald-100' 
+              className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-1 rounded-full ${
+                isPromptMode
+                  ? 'bg-[var(--accent)] text-white'
+                  : isWildberriesMode
+                    ? 'bg-fuchsia-600/80 text-fuchsia-100'
+                    : isPlayerokMode
+                      ? 'bg-orange-600/80 text-orange-100'
+                      : 'bg-emerald-700/80 text-emerald-100'
                } backdrop-blur-sm`} 
              > 
-               {isPromptMode ? ( 
-                 <Wand2 className="w-3 h-3" /> 
-               ) : entry.mode === 'wildberries' ? (
+              {isPromptMode ? (
+                <Wand2 className="w-3 h-3" />
+              ) : isWildberriesMode ? (
                  <span className="font-bold tracking-wider">WB</span>
-               ) : ( 
-                 <ImageIcon className="w-3 h-3" /> 
-               )} 
-               {isPromptMode ? 'Prompt' : entry.mode === 'wildberries' ? 'Wildberries' : 'API'} 
+              ) : isPlayerokMode ? (
+                <span className="font-bold tracking-wider">PO</span>
+              ) : (
+                <ImageIcon className="w-3 h-3" />
+              )}
+              {isPromptMode ? 'Prompt' : isWildberriesMode ? 'Wildberries' : isPlayerokMode ? 'Playerok' : 'API'}
              </span> 
            </div> 
  
@@ -147,11 +154,19 @@
             </div> 
  
             {/* General description summary */} 
-            {entry.input.generalDescription && ( 
+            {entry.input.generalDescription && (
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed"> 
                 {truncate(entry.input.generalDescription, 120)} 
               </p> 
             )} 
+            {isPlayerokMode && playerokCard?.title && (
+              <div className="space-y-1">
+                <h3 className="font-semibold text-[var(--text-primary)]">{playerokCard.title}</h3>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  {truncate(playerokCard.description || '', 90)}
+                </p>
+              </div>
+            )}
             {entry.mode === 'wildberries' && entry.input.product?.productName && (
               <div className="space-y-1">
                 <h3 className="font-semibold text-[var(--text-primary)]">{entry.input.product.productName}</h3>
@@ -168,6 +183,12 @@
                   <Tag>{entry.input.product?.category}</Tag>
                   {entry.input.options?.includeInfographic && <Tag>Инфографика</Tag>}
                   {entry.input.options?.includeMultipleAngles && <Tag>Ракурсы</Tag>}
+                </>
+              ) : isPlayerokMode ? (
+                <>
+                  <Tag>{entry.input.category || playerokCard?.category}</Tag>
+                  {entry.input.style && <Tag>{entry.input.style}</Tag>}
+                  {playerokCard?.priceRub && <Tag>{playerokCard.priceRub} RUB</Tag>}
                 </>
               ) : (
                 <>

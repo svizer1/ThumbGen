@@ -22,14 +22,17 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { ProBadge } from '@/components/ui/ProBadge';
 import { Textarea } from '@/components/ui/Textarea';
+import { LoadingBuilderGame } from '@/components/generator/LoadingBuilderGame';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import JSZip from 'jszip';
 import type { WBVisualStyle } from '@/lib/wildberries-generator';
 
 type Spec = { label: string; value: string };
 
 type GenerationResult = {
   mainImage?: string;
+  alternativeImages?: string[];
   infographic?: string;
   additionalAngles?: string[];
   seoDescription?: string;
@@ -81,6 +84,28 @@ const STYLE_PRESETS: Record<
     panelClassName:
       'border-cyan-400/30 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.24),transparent_30%),linear-gradient(160deg,rgba(15,23,42,0.96),rgba(30,41,59,0.95),rgba(17,24,39,0.98))] text-white shadow-[0_28px_100px_rgba(14,165,233,0.22)]',
     accentClassName: 'from-cyan-200 via-sky-100 to-violet-200',
+  },
+  flavor_burst: {
+    title: 'Сочный вкус',
+    subtitle: 'Яркие ингредиенты и аппетитная композиция',
+    badge: 'Вкусно',
+    previewNote: 'Летающие ягоды/фрукты, максимальная сочность',
+    tone: 'Аппетитная и взрывная карточка',
+    chipClassName: 'border-orange-400/30 bg-orange-500/10 text-orange-100',
+    panelClassName:
+      'border-orange-500/30 bg-[linear-gradient(180deg,rgba(234,88,12,0.96),rgba(153,27,27,0.98))] text-white shadow-[0_28px_90px_rgba(249,115,22,0.22)]',
+    accentClassName: 'from-orange-200 via-white to-red-200',
+  },
+  creative_glow: {
+    title: 'Необычная магия',
+    subtitle: 'Свечение, вода и нестандартный дизайн',
+    badge: 'Креатив',
+    previewNote: 'Неоновые акценты, уникальная типографика, спецэффекты',
+    tone: 'Креативная и футуристичная карточка',
+    chipClassName: 'border-indigo-400/30 bg-indigo-500/10 text-indigo-100',
+    panelClassName:
+      'border-indigo-500/30 bg-[radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.24),transparent_40%),linear-gradient(160deg,rgba(17,24,39,0.96),rgba(49,46,129,0.95),rgba(30,27,75,0.98))] text-white shadow-[0_28px_100px_rgba(99,102,241,0.22)]',
+    accentClassName: 'from-indigo-200 via-purple-100 to-fuchsia-200',
   },
 };
 
@@ -172,17 +197,21 @@ function ToggleOption({
 export default function WildberriesPage() {
   const { user, userData } = useAuth();
   const [productName, setProductName] = useState('');
+  const [brandName, setBrandName] = useState('');
+  const [surface, setSurface] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [features, setFeatures] = useState<string[]>(['']);
   const [selectedStyle, setSelectedStyle] = useState<WBVisualStyle>('standard');
   const [includeInfographic, setIncludeInfographic] = useState(false);
   const [includeMultipleAngles, setIncludeMultipleAngles] = useState(false);
+  const [fastMode, setFastMode] = useState(false);
   const [slidesCount, setSlidesCount] = useState(3);
   const [infographicTitle, setInfographicTitle] = useState('');
   const [specs, setSpecs] = useState<Spec[]>([{ label: '', value: '' }]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSmartFilling, setIsSmartFilling] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [result, setResult] = useState<GenerationResult | null>(null);
 
   const hasBasicAccess =
@@ -195,7 +224,8 @@ export default function WildberriesPage() {
     ? filteredFeatures.slice(0, 4)
     : ['Чёткая подача', 'Контрастные акценты', 'Готово к WB', 'Быстрый просмотр'];
   const visibleSpecs = specs.filter((spec) => spec.label.trim() && spec.value.trim()).slice(0, 4);
-  const price = hasAdvancedAccess && (includeInfographic || includeMultipleAngles) ? 5 : 3;
+  const basePrice = hasAdvancedAccess && (includeInfographic || includeMultipleAngles) ? 5 : 3;
+  const price = basePrice + (fastMode ? 2 : 0);
 
   const addFeature = () => {
     setFeatures((current) => [...current, '']);
@@ -287,6 +317,8 @@ export default function WildberriesPage() {
 
       const product = {
         productName,
+        brandName,
+        surface,
         category,
         description,
         features: filteredFeatures,
@@ -311,6 +343,7 @@ export default function WildberriesPage() {
             includeInfographic,
             includeMultipleAngles,
             anglesCount: slidesCount,
+            fastMode,
           },
         }),
       });
@@ -328,6 +361,63 @@ export default function WildberriesPage() {
       toast.error(error instanceof Error ? error.message : 'Ошибка генерации');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadArchive = async () => {
+    if (!result) return;
+    setIsDownloading(true);
+    try {
+      const zip = new JSZip();
+      
+      const downloadImage = async (url: string, filename: string) => {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        zip.file(filename, blob);
+      };
+
+      const promises: Promise<void>[] = [];
+      let imgCount = 1;
+
+      if (result.mainImage) {
+        promises.push(downloadImage(result.mainImage, `main_${imgCount++}.jpg`));
+      }
+      
+      if (result.alternativeImages) {
+        for (const url of result.alternativeImages) {
+          promises.push(downloadImage(url, `main_variant_${imgCount++}.jpg`));
+        }
+      }
+
+      if (result.infographic) {
+        promises.push(downloadImage(result.infographic, `infographic.jpg`));
+      }
+
+      if (result.additionalAngles) {
+        result.additionalAngles.forEach((url, i) => {
+          promises.push(downloadImage(url, `angle_${i + 1}.jpg`));
+        });
+      }
+
+      if (result.seoDescription) {
+        zip.file('seo_description.txt', result.seoDescription);
+      }
+
+      await Promise.all(promises);
+      const content = await zip.generateAsync({ type: 'blob' });
+      
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(content);
+      a.download = `${brandName ? brandName.trim() : 'wb_images'}.zip`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      
+      toast.success('Архив успешно скачан');
+    } catch (err) {
+      console.error('Download error:', err);
+      toast.error('Ошибка при скачивании архива');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -375,7 +465,7 @@ export default function WildberriesPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <div className="mb-8 space-y-4">
+      <div className="mb-8 space-y-4 animate-fadeIn">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
@@ -420,7 +510,7 @@ export default function WildberriesPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
         <div className="space-y-6">
-          <Card className="overflow-hidden border-[var(--border-strong)] bg-[linear-gradient(180deg,var(--bg-card),var(--bg-surface))] p-0">
+          <Card className="overflow-hidden border-[var(--border-strong)] bg-[linear-gradient(180deg,var(--bg-card),var(--bg-surface))] p-0 animate-fadeInUp stagger-1">
             <div className="border-b border-[var(--border-default)] px-6 py-5">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -436,7 +526,7 @@ export default function WildberriesPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 p-6 md:grid-cols-3">
+            <div className="grid gap-3 p-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {(Object.entries(STYLE_PRESETS) as [WBVisualStyle, (typeof STYLE_PRESETS)[WBVisualStyle]][]).map(
                 ([styleKey, style]) => (
                   <button
@@ -451,13 +541,13 @@ export default function WildberriesPage() {
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div>
+                      <div className="flex-1">
                         <p className="text-lg font-semibold text-[var(--text-primary)]">{style.title}</p>
                         <p className="mt-1 text-sm text-[var(--text-secondary)]">{style.subtitle}</p>
                       </div>
                       <span
                         className={cn(
-                          'inline-flex h-7 w-7 items-center justify-center rounded-full border',
+                          'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border',
                           selectedStyle === styleKey
                             ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
                             : 'border-[var(--border-default)] text-[var(--text-muted)]'
@@ -466,7 +556,7 @@ export default function WildberriesPage() {
                         <Check className="h-4 w-4" />
                       </span>
                     </div>
-                    <div className="mt-4 flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-[var(--text-muted)]">
                       <span className="rounded-full border border-[var(--border-default)] px-2 py-1">{style.badge}</span>
                       <span>{style.tone}</span>
                     </div>
@@ -476,7 +566,7 @@ export default function WildberriesPage() {
             </div>
           </Card>
 
-          <Card className="p-0">
+          <Card className="p-0 animate-fadeInUp stagger-2">
             <div className="border-b border-[var(--border-default)] px-6 py-5">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">
                 Контент
@@ -513,6 +603,21 @@ export default function WildberriesPage() {
                   required
                 />
               </div>
+              
+              <div className="grid gap-4 md:grid-cols-2">
+                <Input
+                  label="Название бренда"
+                  placeholder="Например: Apple, Nike (необязательно)"
+                  value={brandName}
+                  onChange={(event) => setBrandName(event.target.value)}
+                />
+                <Input
+                  label="Расположение (фон/поверхность)"
+                  placeholder="Например: на деревянном столе, на подиуме"
+                  value={surface}
+                  onChange={(event) => setSurface(event.target.value)}
+                />
+              </div>
 
               <Textarea
                 label="Описание товара"
@@ -525,7 +630,7 @@ export default function WildberriesPage() {
             </div>
           </Card>
 
-          <Card className="p-0">
+          <Card className="p-0 animate-fadeInUp stagger-3">
             <div className="border-b border-[var(--border-default)] px-6 py-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -559,7 +664,7 @@ export default function WildberriesPage() {
             </div>
           </Card>
 
-          <Card className="p-0">
+          <Card className="p-0 animate-fadeInUp stagger-4">
             <div className="border-b border-[var(--border-default)] px-6 py-5">
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
@@ -664,10 +769,18 @@ export default function WildberriesPage() {
                   </div>
                 )}
               </ToggleOption>
+
+              <ToggleOption
+                title="Быстро (x3 генерация)"
+                description="Сгенерировать сразу 3 варианта главного изображения одновременно. Стоимость на 2 кредита больше."
+                checked={fastMode}
+                badge="+2 кредита"
+                onChange={setFastMode}
+              />
             </div>
           </Card>
 
-          <Card className="border-[var(--border-strong)] bg-[linear-gradient(135deg,var(--bg-card),var(--bg-surface))] p-6">
+          <Card className="border-[var(--border-strong)] bg-[linear-gradient(135deg,var(--bg-card),var(--bg-surface))] p-6 card-hover animate-fadeInUp stagger-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">Итог</p>
@@ -701,7 +814,7 @@ export default function WildberriesPage() {
         </div>
 
         <div className="space-y-6 xl:sticky xl:top-6 xl:self-start">
-          <Card className="overflow-hidden p-0">
+          <Card className="overflow-hidden p-0 animate-fadeInUp stagger-2">
             <div className="border-b border-[var(--border-default)] px-6 py-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -906,12 +1019,25 @@ export default function WildberriesPage() {
           </Card>
 
           <Card className="p-0">
-            <div className="border-b border-[var(--border-default)] px-6 py-5">
+            <div className="border-b border-[var(--border-default)] px-6 py-5 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-[var(--text-primary)]">Результат генерации</h2>
+              {result && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDownloadArchive}
+                  disabled={isDownloading}
+                >
+                  {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  {isDownloading ? 'Сборка...' : 'Скачать весь пак (.zip)'}
+                </Button>
+              )}
             </div>
 
             <div className="space-y-6 p-6">
-              {!result ? (
+              {isGenerating ? (
+                <LoadingBuilderGame />
+              ) : !result ? (
                 <div className="rounded-3xl border-2 border-dashed border-[var(--border-default)] p-12 text-center">
                   <ShoppingBag className="mx-auto mb-4 h-12 w-12 text-[var(--text-muted)]" />
                   <p className="font-medium text-[var(--text-primary)]">Результат появится здесь после генерации</p>
@@ -922,6 +1048,22 @@ export default function WildberriesPage() {
               ) : (
                 <>
                   {result.mainImage && <ResultImageCard title="Основное изображение" imageUrl={result.mainImage} />}
+
+                  {!!result.alternativeImages?.length && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <h3 className="text-sm font-semibold text-[var(--text-primary)]">Варианты (Быстрый режим)</h3>
+                        <span className="rounded-full border border-[var(--border-default)] px-2.5 py-1 text-xs text-[var(--text-muted)]">
+                          {result.alternativeImages.length} шт.
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {result.alternativeImages.map((url, index) => (
+                          <ResultImageCard key={`alt-${index}`} title={`Вариант ${index + 2}`} imageUrl={url} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {result.infographic && <ResultImageCard title="Инфографика" imageUrl={result.infographic} />}
 

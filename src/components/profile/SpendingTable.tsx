@@ -184,6 +184,9 @@ export function SpendingTable() {
             <option value="bytez">Bytez</option>
             <option value="huggingface">Hugging Face</option>
             <option value="puter">Puter</option>
+            <option value="wildberries">Wildberries</option>
+            <option value="playerok">Playerok</option>
+            <option value="internal">Internal</option>
           </select>
         </div>
 

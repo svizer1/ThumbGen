@@ -34,8 +34,9 @@ export default function HistoryPage() {
           id: data.id || doc.id,
           createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
           mode: data.mode,
-          input: data.input,
-          result: data.result,
+          input: data.input || { generalDescription: '', mode: data.mode || 'prompt' },
+          result: data.result || {},
+          playerokCard: data.playerokCard,
           status: data.status,
           error: data.error,
         };
@@ -87,7 +88,7 @@ export default function HistoryPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 animate-fadeIn">
         <div className="flex items-center gap-4">
           <Link
             href="/"
@@ -138,8 +139,10 @@ export default function HistoryPage() {
       {/* Grid */}
       {history.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {history.map((entry) => (
-            <HistoryCard key={entry.id} entry={entry} />
+          {history.map((entry, i) => (
+            <div key={entry.id} className="animate-fadeInUp" style={{ animationDelay: `${i * 0.05}s` }}>
+              <HistoryCard entry={entry} />
+            </div>
           ))}
         </div>
       )}

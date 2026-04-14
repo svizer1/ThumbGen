@@ -182,6 +182,16 @@ export const BYTEZ_MODELS = [
     supportsImageToImage: false,
   },
   { 
+    value: 'dreamlike-art/dreamlike-photoreal-2.0', 
+    label: 'Dreamlike Photoreal 2.0 (Фотореализм)',
+    supportsImageToImage: false,
+  },
+  { 
+    value: 'stabilityai/stable-diffusion-xl-base-1.0', 
+    label: 'Stable Diffusion XL (Стабильный)',
+    supportsImageToImage: false,
+  },
+  { 
     value: 'black-forest-labs/FLUX.1-dev', 
     label: 'FLUX.1 Dev (Лучший для текста)',
     supportsImageToImage: false,
@@ -189,11 +199,6 @@ export const BYTEZ_MODELS = [
   { 
     value: 'black-forest-labs/FLUX.1-schnell', 
     label: 'FLUX.1 Schnell (Быстрый)',
-    supportsImageToImage: false,
-  },
-  { 
-    value: 'stabilityai/stable-diffusion-xl-base-1.0', 
-    label: 'Stable Diffusion XL (Стабильный)',
     supportsImageToImage: false,
   },
   { 

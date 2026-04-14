@@ -47,7 +47,7 @@ export function PackSelector({ onSelectPack }: PackSelectorProps) {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-[32px] border border-[var(--border-strong)] bg-[linear-gradient(135deg,var(--bg-card),var(--bg-surface))] p-6 sm:p-8">
+      <div className="rounded-[32px] border border-[var(--border-strong)] bg-[linear-gradient(135deg,var(--bg-card),var(--bg-surface))] p-6 sm:p-8 animate-fadeInUp">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-end">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--text-secondary)]">
@@ -85,7 +85,7 @@ export function PackSelector({ onSelectPack }: PackSelectorProps) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] p-4 sm:flex-row sm:items-center sm:p-5">
+      <div className="flex flex-col gap-4 rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] p-4 sm:flex-row sm:items-center sm:p-5 animate-fadeInUp stagger-1">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--text-muted)]" />
           <input
@@ -120,7 +120,7 @@ export function PackSelector({ onSelectPack }: PackSelectorProps) {
       </div>
 
       {!hasProAccess && (
-        <div className="rounded-[28px] border border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/10 p-5">
+        <div className="rounded-[28px] border border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/10 p-5 animate-fadeInUp stagger-2">
           <div className="flex items-start gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
               <Crown className="h-5 w-5 text-white" />
@@ -145,13 +145,14 @@ export function PackSelector({ onSelectPack }: PackSelectorProps) {
 
       {filteredPacks.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPacks.map(pack => (
-            <PackPreview
-              key={pack.id}
-              pack={pack}
-              onSelect={onSelectPack}
-              isLocked={!hasProAccess}
-            />
+          {filteredPacks.map((pack, i) => (
+            <div key={pack.id} className="animate-fadeInUp" style={{ animationDelay: `${i * 0.06}s` }}>
+              <PackPreview
+                pack={pack}
+                onSelect={onSelectPack}
+                isLocked={!hasProAccess}
+              />
+            </div>
           ))}
         </div>
       ) : (

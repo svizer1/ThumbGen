@@ -49,7 +49,7 @@ export function ProfileButton() {
         </div>
 
         {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-semibold">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] flex items-center justify-center text-white text-sm font-semibold shadow-sm">
           {userData.photoURL ? (
             <img
               src={userData.photoURL}
@@ -70,11 +70,11 @@ export function ProfileButton() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl shadow-2xl overflow-hidden z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl shadow-2xl overflow-hidden z-50 animate-scaleIn">
           {/* User Info */}
           <div className="p-4 border-b border-[var(--border-subtle)]">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-lg font-semibold">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] flex items-center justify-center text-white text-lg font-semibold shadow-md">
                 {userData.photoURL ? (
                   <img
                     src={userData.photoURL}

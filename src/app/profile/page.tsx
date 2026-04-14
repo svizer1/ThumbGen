@@ -130,9 +130,8 @@ export default function ProfilePage() {
         {/* Left Column - User Info */}
         <div className="lg:col-span-1 space-y-8">
           {/* User Card */}
-          <Card className="animate-slideInLeft overflow-hidden border-[var(--border-default)] hover:border-[var(--border-strong)] transition-colors duration-300">
+          <Card className="animate-slideInLeft overflow-hidden border-[var(--border-default)] hover:border-[var(--border-strong)] transition-colors duration-300 card-hover">
             <div className="relative h-32 bg-[var(--bg-surface)] border-b border-[var(--border-default)] flex items-center justify-center overflow-hidden">
-               <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay"></div>
                <div className="absolute top-0 w-full h-full bg-gradient-to-b from-transparent to-[var(--bg-card)]/80"></div>
             </div>
             <div className="px-6 pb-6 relative">
@@ -146,7 +145,7 @@ export default function ProfilePage() {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full rounded-full bg-[var(--bg-elevated)] text-[var(--text-secondary)] flex items-center justify-center border border-[var(--border-default)]">
+                    <div className="w-full h-full rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] text-white flex items-center justify-center">
                       {userData.displayName?.charAt(0).toUpperCase() || 'U'}
                     </div>
                   )}
@@ -189,7 +188,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Quick Stats */}
-          <Card className="animate-fadeInUp stagger-1">
+          <Card className="animate-fadeInUp stagger-1 card-hover">
             <CardHeader>
               <CardTitle>Статистика</CardTitle>
             </CardHeader>
@@ -234,7 +233,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Subscription Card */}
-          <Card className="animate-fadeInUp stagger-1">
+          <Card className="animate-fadeInUp stagger-1 card-hover">
             <CardHeader>
               <CardTitle>Подписка</CardTitle>
             </CardHeader>
@@ -309,7 +308,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Account Settings */}
-          <Card className="animate-fadeInUp stagger-2">
+          <Card className="animate-fadeInUp stagger-2 card-hover">
             <CardHeader>
               <CardTitle>Настройки аккаунта</CardTitle>
             </CardHeader>
@@ -362,7 +361,7 @@ export default function ProfilePage() {
 
       {/* Spending History - Full Width */}
       <div className="mt-8 animate-fadeInUp stagger-4">
-        <Card>
+        <Card className="card-hover">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Receipt className="w-5 h-5 text-[var(--accent)]" />

@@ -85,7 +85,7 @@ export default function GeneratorV2Page() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 animate-fadeIn">
         <Link href="/" className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4">
           <ArrowLeft className="w-4 h-4" />
           Вернуться к Генератору V1
@@ -109,7 +109,7 @@ export default function GeneratorV2Page() {
         // Generator View with Selected Pack
         <div className="space-y-6">
           {/* Selected Pack Info */}
-          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-6">
+          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-6 animate-fadeInUp stagger-1">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
